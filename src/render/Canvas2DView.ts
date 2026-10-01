@@ -1,5 +1,6 @@
 import { Particle } from '../physics/Particle.ts';
 import { CoulombEngine, ForceResult } from '../physics/CoulombEngine.ts';
+import { TestParticle } from '../physics/TestParticle.ts';
 
 export class Canvas2DView {
   private canvas: HTMLCanvasElement;
@@ -12,7 +13,15 @@ export class Canvas2DView {
 
   public showGrid: boolean = true;
   public showVectors: boolean = true;
+  public showEFieldGrid: boolean = false;
+  public showFieldLines: boolean = true;
+  public testParticles: TestParticle[] = [];
+  public testChargeSign: number = 1;
+  private animationRunning: boolean = false;
+  private lastTimestamp: number = 0;
+
   public onStateChange?: () => void;
+
 
   constructor(canvas: HTMLCanvasElement, engine: CoulombEngine) {
     this.canvas = canvas;
@@ -56,10 +65,12 @@ export class Canvas2DView {
 
     this.canvas.addEventListener('pointerdown', (e) => {
       const pos = getPos(e);
+      let hitParticle = false;
       for (const p of this.particles) {
         const dx = pos.x - p.x;
         const dy = pos.y - p.y;
         if (Math.hypot(dx, dy) <= p.radius + 10) {
+          hitParticle = true;
           this.activeDraggedParticle = p;
           p.isDragging = true;
           this.dragOffset = { x: dx, y: dy };
@@ -68,6 +79,10 @@ export class Canvas2DView {
           this.render();
           break;
         }
+      }
+
+      if (!hitParticle && (e.shiftKey || e.altKey)) {
+        this.spawnTestParticle(pos.x, pos.y);
       }
     });
 
@@ -122,6 +137,54 @@ export class Canvas2DView {
     this.canvas.addEventListener('pointercancel', endDrag);
   }
 
+  public spawnTestParticle(x?: number, y?: number, q?: number): void {
+    const width = this.canvas.width / this.dpr;
+    const height = this.canvas.height / this.dpr;
+    const spawnX = x ?? width * 0.5 + (Math.random() - 0.5) * 60;
+    const spawnY = y ?? height * 0.35 + (Math.random() - 0.5) * 60;
+    const charge = q ?? this.testChargeSign * 0.4;
+
+    const tp = new TestParticle(spawnX, spawnY, charge);
+    this.testParticles.push(tp);
+    this.ensureAnimationRunning();
+    this.render();
+  }
+
+  public clearTestParticles(): void {
+    this.testParticles = [];
+    this.render();
+  }
+
+  private ensureAnimationRunning(): void {
+    if (this.animationRunning) return;
+    this.animationRunning = true;
+    this.lastTimestamp = performance.now();
+    requestAnimationFrame((ts) => this.animationStep(ts));
+  }
+
+  private animationStep(timestamp: number): void {
+    if (!this.animationRunning) return;
+
+    const dt = Math.min(0.05, (timestamp - this.lastTimestamp) / 1000);
+    this.lastTimestamp = timestamp;
+
+    const width = this.canvas.width / this.dpr;
+    const height = this.canvas.height / this.dpr;
+
+    for (const tp of this.testParticles) {
+      tp.update(dt, this.engine, this.particles, width, height);
+    }
+    this.testParticles = this.testParticles.filter((tp) => tp.isAlive);
+
+    this.render();
+
+    if (this.testParticles.length > 0) {
+      requestAnimationFrame((ts) => this.animationStep(ts));
+    } else {
+      this.animationRunning = false;
+    }
+  }
+
   public render(): void {
     const ctx = this.ctx;
     const width = this.canvas.width / this.dpr;
@@ -134,6 +197,16 @@ export class Canvas2DView {
     // 1. Grid
     if (this.showGrid) {
       this.drawGrid(ctx, width, height);
+    }
+
+    // 1.5. Electric field vectors grid
+    if (this.showEFieldGrid) {
+      this.drawEFieldGrid(ctx, width, height);
+    }
+
+    // 1.8. Electric field lines
+    if (this.showFieldLines) {
+      this.drawFieldLines(ctx, width, height);
     }
 
     if (this.particles.length >= 2) {
@@ -150,11 +223,166 @@ export class Canvas2DView {
       }
     }
 
-    // 4. Particles
+    // 4. Source Particles
     for (const p of this.particles) {
       this.drawParticle(ctx, p);
     }
 
+    // 5. Test Particles
+    this.drawTestParticles(ctx);
+
+    ctx.restore();
+  }
+
+  private drawEFieldGrid(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+    const spacing = 36;
+    const arrowLen = 14;
+
+    ctx.save();
+    for (let x = spacing * 0.5; x < width; x += spacing) {
+      for (let y = spacing * 0.5; y < height; y += spacing) {
+        let insideParticle = false;
+        for (const p of this.particles) {
+          if (Math.hypot(x - p.x, y - p.y) < p.radius + 6) {
+            insideParticle = true;
+            break;
+          }
+        }
+        if (insideParticle) continue;
+
+        const field = this.engine.calculateElectricField(x, y, this.particles);
+        if (field.magnitude < 1e-4) continue;
+
+        const ux = field.ex / field.magnitude;
+        const uy = field.ey / field.magnitude;
+
+        const norm = Math.min(1, Math.max(0.12, Math.log10(1 + field.magnitude / 500) / 4));
+        const alpha = Math.min(0.85, Math.max(0.18, norm));
+
+        let strokeColor = `rgba(56, 189, 248, ${alpha})`;
+        if (norm > 0.65) {
+          strokeColor = `rgba(251, 191, 36, ${alpha})`;
+        } else if (norm > 0.45) {
+          strokeColor = `rgba(52, 211, 153, ${alpha})`;
+        }
+
+        ctx.strokeStyle = strokeColor;
+        ctx.fillStyle = strokeColor;
+        ctx.lineWidth = 1.2;
+
+        const half = arrowLen * 0.5;
+        const startX = x - ux * half;
+        const startY = y - uy * half;
+        const endX = x + ux * half;
+        const endY = y + uy * half;
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        const head = 4;
+        const angle = Math.atan2(uy, ux);
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(
+          endX - head * Math.cos(angle - Math.PI / 5),
+          endY - head * Math.sin(angle - Math.PI / 5)
+        );
+        ctx.lineTo(
+          endX - head * Math.cos(angle + Math.PI / 5),
+          endY - head * Math.sin(angle + Math.PI / 5)
+        );
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  private drawFieldLines(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+    const lines = this.engine.calculateFieldLines(this.particles, width, height);
+    if (lines.length === 0) return;
+
+    ctx.save();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = 'rgba(147, 197, 253, 0.45)';
+    ctx.shadowColor = 'rgba(96, 165, 250, 0.3)';
+    ctx.shadowBlur = 4;
+
+    for (const line of lines) {
+      if (line.length < 2) continue;
+
+      ctx.beginPath();
+      ctx.moveTo(line[0].x, line[0].y);
+      for (let i = 1; i < line.length; i++) {
+        ctx.lineTo(line[i].x, line[i].y);
+      }
+      ctx.stroke();
+
+      // Small direction arrow along the line
+      const midIdx = Math.floor(line.length * 0.45);
+      if (midIdx > 0 && midIdx < line.length - 1) {
+        const pPrev = line[midIdx - 1];
+        const pCurr = line[midIdx];
+        const pNext = line[midIdx + 1];
+
+        const dx = pNext.x - pPrev.x;
+        const dy = pNext.y - pPrev.y;
+        const angle = Math.atan2(dy, dx);
+        const head = 7;
+
+        ctx.fillStyle = 'rgba(191, 219, 254, 0.85)';
+        ctx.beginPath();
+        ctx.moveTo(pCurr.x, pCurr.y);
+        ctx.lineTo(
+          pCurr.x - head * Math.cos(angle - Math.PI / 5),
+          pCurr.y - head * Math.sin(angle - Math.PI / 5)
+        );
+        ctx.lineTo(
+          pCurr.x - head * Math.cos(angle + Math.PI / 5),
+          pCurr.y - head * Math.sin(angle + Math.PI / 5)
+        );
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  private drawTestParticles(ctx: CanvasRenderingContext2D): void {
+    if (this.testParticles.length === 0) return;
+
+    ctx.save();
+    for (const tp of this.testParticles) {
+      const isPos = tp.q > 0;
+      const headColor = isPos ? '#f87171' : '#60a5fa';
+      const trailColor = isPos ? 'rgba(248, 113, 113,' : 'rgba(96, 165, 250,';
+
+      if (tp.trail.length > 1) {
+        for (let i = 1; i < tp.trail.length; i++) {
+          const alpha = (i / tp.trail.length) * 0.6;
+          ctx.strokeStyle = `${trailColor} ${alpha})`;
+          ctx.lineWidth = (i / tp.trail.length) * 3;
+          ctx.beginPath();
+          ctx.moveTo(tp.trail[i - 1].x, tp.trail[i - 1].y);
+          ctx.lineTo(tp.trail[i].x, tp.trail[i].y);
+          ctx.stroke();
+        }
+      }
+
+      ctx.shadowColor = headColor;
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = headColor;
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, tp.radius * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 

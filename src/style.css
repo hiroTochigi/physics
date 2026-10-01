@@ -652,6 +652,79 @@ body {
   align-items: center;
 }
 
+/* Phase 2: Field Card & Test Particles */
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid #3b82f6;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-outline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.btn-outline.active {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #60a5fa;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.test-particle-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-charge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field-sublabel {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.polarity-group {
+  display: flex;
+  gap: 6px;
+}
+
+.test-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.test-actions-row .btn-primary {
+  flex: 1;
+}
+
+.test-particle-hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .workspace {
@@ -665,3 +738,4 @@ body {
     border-bottom: 1px solid var(--border-color);
   }
 }
+

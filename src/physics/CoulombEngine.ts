@@ -130,4 +130,130 @@ export class CoulombEngine {
     }
     return `${distMeters.toFixed(2)} m`;
   }
+
+  /**
+   * Calculate Electric Field E = (k_e * q) / r^2 at any coordinate (x, y)
+   */
+  public calculateElectricField(x: number, y: number, particles: Particle[]): { ex: number; ey: number; magnitude: number } {
+    let totalEx = 0;
+    let totalEy = 0;
+
+    for (const p of particles) {
+      if (Math.abs(p.q) < 1e-6) continue;
+
+      const dx = x - p.x;
+      const dy = y - p.y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+      const distM = distPx / this.pixelsPerMeter;
+
+      const rEff2 = distM * distM + this.softeningDistance * this.softeningDistance;
+      const qCoulomb = p.q * 1e-6;
+
+      const eMag = (CoulombEngine.K_E * qCoulomb) / rEff2;
+
+      const safeDistPx = Math.max(0.1, distPx);
+      const ux = dx / safeDistPx;
+      const uy = dy / safeDistPx;
+
+      totalEx += eMag * ux;
+      totalEy += eMag * uy;
+    }
+
+    const magnitude = Math.hypot(totalEx, totalEy);
+    return { ex: totalEx, ey: totalEy, magnitude };
+  }
+
+  /**
+   * Calculate electric field lines using numerical integration
+   */
+  public calculateFieldLines(particles: Particle[], width: number, height: number): Vector2D[][] {
+    const lines: Vector2D[][] = [];
+    const activeParticles = particles.filter((p) => Math.abs(p.q) > 0.05);
+    if (activeParticles.length === 0) return lines;
+
+    const positiveParticles = activeParticles.filter((p) => p.q > 0);
+    const negativeParticles = activeParticles.filter((p) => p.q < 0);
+
+    const ds = 4;
+    const maxSteps = 240;
+
+    const trace = (startX: number, startY: number, sign: number): Vector2D[] => {
+      const line: Vector2D[] = [{ x: startX, y: startY }];
+      let cx = startX;
+      let cy = startY;
+
+      for (let s = 0; s < maxSteps; s++) {
+        const field = this.calculateElectricField(cx, cy, activeParticles);
+        if (field.magnitude < 1e-5) break;
+
+        const ux = (field.ex / field.magnitude) * sign;
+        const uy = (field.ey / field.magnitude) * sign;
+
+        // Runge-Kutta 2nd order (midpoint)
+        const midX = cx + ux * (ds * 0.5);
+        const midY = cy + uy * (ds * 0.5);
+        const midField = this.calculateElectricField(midX, midY, activeParticles);
+        const midMag = Math.hypot(midField.ex, midField.ey);
+        if (midMag < 1e-5) break;
+
+        const mx = (midField.ex / midMag) * sign;
+        const my = (midField.ey / midMag) * sign;
+
+        cx += mx * ds;
+        cy += my * ds;
+
+        line.push({ x: cx, y: cy });
+
+        if (cx < -40 || cx > width + 40 || cy < -40 || cy > height + 40) {
+          break;
+        }
+
+        let hit = false;
+        for (const p of activeParticles) {
+          const d = Math.hypot(cx - p.x, cy - p.y);
+          if (d <= p.radius + 3) {
+            hit = true;
+            break;
+          }
+        }
+        if (hit) break;
+      }
+
+      return line;
+    };
+
+    // 1. Trace from positive particles
+    for (const p of positiveParticles) {
+      const numLines = Math.min(24, Math.max(8, Math.round(p.q * 4)));
+      for (let i = 0; i < numLines; i++) {
+        const angle = (i / numLines) * Math.PI * 2;
+        const sx = p.x + Math.cos(angle) * (p.radius + 3);
+        const sy = p.y + Math.sin(angle) * (p.radius + 3);
+        const line = trace(sx, sy, 1);
+        if (line.length > 2) {
+          lines.push(line);
+        }
+      }
+    }
+
+    // 2. If no positive particles, trace outward from negative charges in -E direction then reverse
+    if (positiveParticles.length === 0) {
+      for (const p of negativeParticles) {
+        const numLines = Math.min(24, Math.max(8, Math.round(Math.abs(p.q) * 4)));
+        for (let i = 0; i < numLines; i++) {
+          const angle = (i / numLines) * Math.PI * 2;
+          const sx = p.x + Math.cos(angle) * (p.radius + 3);
+          const sy = p.y + Math.sin(angle) * (p.radius + 3);
+          const line = trace(sx, sy, -1);
+          if (line.length > 2) {
+            line.reverse();
+            lines.push(line);
+          }
+        }
+      }
+    }
+
+    return lines;
+  }
 }
+

@@ -72,6 +72,16 @@
               <span class="toggle-slider"></span>
               <span class="toggle-text">力ベクトル</span>
             </label>
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-field-lines" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">電気力線</span>
+            </label>
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-efield" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">電場ベクトル</span>
+            </label>
           </div>
         </div>
       </section>
@@ -94,6 +104,32 @@
           <div class="graph-legend">
             <span class="legend-item"><span class="legend-color theoretical-line"></span>理論曲線 <span class="math-expr">$F(r)$</span></span>
             <span class="legend-item"><span class="legend-color live-point"></span>現在の動作点</span>
+          </div>
+        </div>
+
+        <!-- Phase 2: Electric Field & Test Particle Card -->
+        <div class="card field-card">
+          <div class="card-header">
+            <h3>場の可視化 & テスト電荷</h3>
+            <span class="card-tag">Phase 2</span>
+          </div>
+          <div class="test-particle-controls">
+            <div class="test-charge-row">
+              <span class="field-sublabel">テスト電荷の極性:</span>
+              <div class="polarity-group">
+                <button type="button" class="btn btn-xs btn-outline active" id="btn-test-pos">+ 正電荷</button>
+                <button type="button" class="btn btn-xs btn-outline" id="btn-test-neg">− 負電荷</button>
+              </div>
+            </div>
+            <div class="test-actions-row">
+              <button type="button" class="btn btn-sm btn-primary" id="btn-spawn-test">
+                <span>⚡ テスト電荷を放出</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-clear-test">
+                <span>クリア</span>
+              </button>
+            </div>
+            <p class="test-particle-hint">💡 キャンバス上を <strong>Shift + クリック</strong> してもテスト電荷を任意の位置に配置できます。</p>
           </div>
         </div>
 

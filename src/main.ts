@@ -43,6 +43,13 @@ const q2Badge = document.getElementById('q2-badge')!;
 
 const chkGrid = document.getElementById('chk-grid') as HTMLInputElement;
 const chkVectors = document.getElementById('chk-vectors') as HTMLInputElement;
+const chkFieldLines = document.getElementById('chk-field-lines') as HTMLInputElement;
+const chkEField = document.getElementById('chk-efield') as HTMLInputElement;
+
+const btnTestPos = document.getElementById('btn-test-pos') as HTMLButtonElement;
+const btnTestNeg = document.getElementById('btn-test-neg') as HTMLButtonElement;
+const btnSpawnTest = document.getElementById('btn-spawn-test') as HTMLButtonElement;
+const btnClearTest = document.getElementById('btn-clear-test') as HTMLButtonElement;
 
 const presetAttract = document.getElementById('preset-attract')!;
 const presetRepel = document.getElementById('preset-repel')!;
@@ -243,6 +250,48 @@ chkVectors.addEventListener('change', () => {
   canvasView.showVectors = chkVectors.checked;
   canvasView.render();
 });
+
+if (chkFieldLines) {
+  chkFieldLines.addEventListener('change', () => {
+    canvasView.showFieldLines = chkFieldLines.checked;
+    canvasView.render();
+  });
+}
+
+if (chkEField) {
+  chkEField.addEventListener('change', () => {
+    canvasView.showEFieldGrid = chkEField.checked;
+    canvasView.render();
+  });
+}
+
+// Test Particle Controls
+if (btnTestPos && btnTestNeg) {
+  btnTestPos.addEventListener('click', () => {
+    canvasView.testChargeSign = 1;
+    btnTestPos.classList.add('active');
+    btnTestNeg.classList.remove('active');
+  });
+
+  btnTestNeg.addEventListener('click', () => {
+    canvasView.testChargeSign = -1;
+    btnTestNeg.classList.add('active');
+    btnTestPos.classList.remove('active');
+  });
+}
+
+if (btnSpawnTest) {
+  btnSpawnTest.addEventListener('click', () => {
+    canvasView.spawnTestParticle();
+  });
+}
+
+if (btnClearTest) {
+  btnClearTest.addEventListener('click', () => {
+    canvasView.clearTestParticles();
+  });
+}
+
 
 // Initialize positions to center of canvas on start
 window.addEventListener('load', () => {
