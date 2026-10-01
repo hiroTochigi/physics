@@ -57,6 +57,7 @@
         <div class="step-hint-box" id="step-hint-box">
           <span class="hint-icon">💡</span>
           <span class="hint-text" id="step-action-text">...</span>
+          <button type="button" class="btn btn-xs btn-accent" id="btn-banner-action" style="display: none; margin-left: auto;">⚡ テスト電荷を転がす</button>
         </div>
       </div>
     </div>
@@ -88,6 +89,7 @@
         </div>
         <div class="canvas-wrapper view-2d" id="canvas-wrapper">
           <div class="canvas-pane pane-2d" id="pane-2d">
+            <div class="pane-badge pane-badge-2d">2D 電界・力線</div>
             <canvas id="sim-canvas"></canvas>
             <div id="canvas-overlay" class="canvas-overlay">
               <div class="hud-stat hud-force">
@@ -102,6 +104,7 @@
             </div>
           </div>
           <div class="canvas-pane pane-3d" id="pane-3d">
+            <div class="pane-badge pane-badge-3d">3D 電位曲面（山と谷）</div>
             <canvas id="potential-canvas-3d"></canvas>
             <div class="three-overlay">
               <div class="three-hud-stat">

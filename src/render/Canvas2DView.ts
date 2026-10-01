@@ -21,7 +21,7 @@ export class Canvas2DView {
   private lastTimestamp: number = 0;
 
   public onStateChange?: () => void;
-
+  public onAnimationTick?: () => void;
 
   constructor(canvas: HTMLCanvasElement, engine: CoulombEngine) {
     this.canvas = canvas;
@@ -41,6 +41,38 @@ export class Canvas2DView {
     this.particles = particles;
   }
 
+  /**
+   * Smoothly positions particles at specific viewport percentage ratios
+   */
+  public fitParticlesToViewport(ratioX1: number = 0.28, ratioX2: number = 0.72, ratioY: number = 0.52): void {
+    if (this.particles.length < 2) return;
+    const rect = this.canvas.parentElement?.getBoundingClientRect();
+    const w = rect && rect.width > 0 ? rect.width : (this.canvas.width / this.dpr || 600);
+    const h = rect && rect.height > 0 ? rect.height : (this.canvas.height / this.dpr || 400);
+
+    this.particles[0].x = w * ratioX1;
+    this.particles[0].y = h * ratioY;
+    this.particles[1].x = w * ratioX2;
+    this.particles[1].y = h * ratioY;
+
+    this.render();
+  }
+
+  /**
+   * Clamp particles so they always remain safely inside the visible canvas
+   */
+  public clampParticles(): void {
+    const w = this.canvas.width / this.dpr;
+    const h = this.canvas.height / this.dpr;
+    if (w <= 0 || h <= 0) return;
+
+    for (const p of this.particles) {
+      const pad = p.radius + 15;
+      p.x = Math.max(pad, Math.min(w - pad, p.x));
+      p.y = Math.max(pad, Math.min(h - pad, p.y));
+    }
+  }
+
   public handleResize(): void {
     const rect = this.canvas.parentElement?.getBoundingClientRect();
     if (!rect) return;
@@ -51,6 +83,7 @@ export class Canvas2DView {
     this.canvas.style.width = `${rect.width}px`;
     this.canvas.style.height = `${rect.height}px`;
 
+    this.clampParticles();
     this.render();
   }
 
@@ -178,10 +211,17 @@ export class Canvas2DView {
 
     this.render();
 
+    if (this.onAnimationTick) {
+      this.onAnimationTick();
+    }
+
     if (this.testParticles.length > 0) {
       requestAnimationFrame((ts) => this.animationStep(ts));
     } else {
       this.animationRunning = false;
+      if (this.onAnimationTick) {
+        this.onAnimationTick();
+      }
     }
   }
 

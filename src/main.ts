@@ -304,9 +304,17 @@ if (btnSpawnTest) {
 if (btnClearTest) {
   btnClearTest.addEventListener('click', () => {
     canvasView.clearTestParticles();
+    threeView.clearTestParticleMeshes();
   });
 }
 
+// Synchronize 2D test particles into 3D glowing rolling particles on the potential landscape
+canvasView.onAnimationTick = () => {
+  const rect = simCanvas.parentElement?.getBoundingClientRect();
+  const w = rect && rect.width > 0 ? rect.width : (simCanvas.width / (window.devicePixelRatio || 1));
+  const h = rect && rect.height > 0 ? rect.height : (simCanvas.height / (window.devicePixelRatio || 1));
+  threeView.updateTestParticles(canvasView.testParticles, w, h);
+};
 
 // View Mode Tabs (2D / 3D / Split)
 const tab2D = document.getElementById('tab-view-2d');
@@ -320,11 +328,25 @@ const switchView = (mode: '2d' | '3d' | 'split') => {
   if (mode === '3d') tab3D?.classList.add('active');
   if (mode === 'split') tabSplit?.classList.add('active');
 
-  // Trigger resize and re-render
+  // Trigger resize
   canvasView.handleResize();
   threeView.handleResize();
+
+  if (mode === 'split') {
+    // When switching to split view, fit particles nicely within the half-width canvas
+    canvasView.fitParticlesToViewport(0.28, 0.72, 0.52);
+    threeView.setOptimalSplitCamera();
+  } else if (mode === '2d') {
+    // Check if particles were compressed into a narrow span
+    const w = simCanvas.width / (window.devicePixelRatio || 1);
+    if (w > 0 && Math.abs(particles[1].x - particles[0].x) < w * 0.25) {
+      canvasView.fitParticlesToViewport(0.35, 0.65, 0.5);
+    }
+  }
+
   canvasView.render();
   threeView.updateSurface();
+  updateUI();
 };
 
 tab2D?.addEventListener('click', () => switchView('2d'));
@@ -485,9 +507,38 @@ function updateLearningStepUI(step: ScenarioStep): void {
     canvasView.render();
     updateUI();
   }
+
+  // Specifically for Step 3:
+  const btnBannerAction = document.getElementById('btn-banner-action');
+  if (btnBannerAction) {
+    btnBannerAction.style.display = step.stepIndex === 3 ? 'inline-flex' : 'none';
+  }
+
+  if (step.stepIndex === 3) {
+    canvasView.fitParticlesToViewport(0.28, 0.72, 0.52);
+    threeView.setOptimalSplitCamera();
+    threeView.updateSurface();
+
+    // Automatically spawn rolling test charges from mountain to valley
+    setTimeout(() => {
+      canvasView.clearTestParticles();
+      threeView.clearTestParticleMeshes();
+      const p1 = particles[0];
+      canvasView.spawnTestParticle(p1.x + 40, p1.y - 18, 0.4);
+      canvasView.spawnTestParticle(p1.x + 35, p1.y + 18, 0.4);
+      canvasView.spawnTestParticle(p1.x + 50, p1.y, 0.4);
+    }, 120);
+  }
 }
 
 // Learning Scenario Event Handlers
+const btnBannerAction = document.getElementById('btn-banner-action');
+btnBannerAction?.addEventListener('click', () => {
+  const p1 = particles[0];
+  canvasView.spawnTestParticle(p1.x + 35, p1.y - 15, 0.4);
+  canvasView.spawnTestParticle(p1.x + 35, p1.y + 15, 0.4);
+});
+
 learningScenario.onModeToggle((active) => {
   if (active) {
     learningBanner?.classList.remove('hidden');

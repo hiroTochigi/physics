@@ -50,6 +50,19 @@ test.describe('探究学習モード＆演習課題・解説システム E2Eテ�
     await page.click('#btn-next-step');
     await expect(page.locator('#step-badge')).toHaveText('Step 3: 空間イメージの獲得');
     await expect(page.locator('#canvas-wrapper')).toHaveClass(/view-split/);
+    await expect(page.locator('#btn-banner-action')).toBeVisible();
+
+    // 2D画面内に両粒子が完全に収まっていること（画面外にはみ出していないこと）
+    const isFramed = await page.evaluate(() => {
+      const s = window.__SIM_STATE__!;
+      const simCanvas = document.getElementById('sim-canvas') as HTMLCanvasElement;
+      const rect = simCanvas.getBoundingClientRect();
+      const p1 = s.particles[0];
+      const p2 = s.particles[1];
+      return p1.x > 30 && p1.x < rect.width * 0.5 &&
+             p2.x > rect.width * 0.5 && p2.x < rect.width - 30;
+    });
+    expect(isFramed).toBe(true);
 
     // 次へ -> Step 4: 手計算課題
     await page.click('#btn-next-step');

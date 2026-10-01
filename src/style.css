@@ -278,6 +278,29 @@ body {
   cursor: grabbing;
 }
 
+/* Pane Badges */
+.pane-badge {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 6;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.canvas-wrapper.view-split .pane-badge {
+  display: block;
+}
+
 /* Three Overlay */
 .three-overlay {
   position: absolute;
@@ -288,6 +311,7 @@ body {
   align-items: flex-end;
   gap: 8px;
   pointer-events: none;
+  z-index: 6;
 }
 
 .three-overlay button {
@@ -316,6 +340,7 @@ body {
   display: flex;
   gap: 12px;
   pointer-events: none;
+  z-index: 6;
 }
 
 .hud-stat {
@@ -358,6 +383,47 @@ body {
 
 .hud-type.attract {
   color: #fbbf24;
+}
+
+/* Split view overlay adaptations */
+.canvas-wrapper.view-split .canvas-overlay {
+  top: 36px;
+  left: 10px;
+  gap: 6px;
+}
+
+.canvas-wrapper.view-split .hud-stat {
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.canvas-wrapper.view-split .hud-label {
+  font-size: 0.65rem;
+  margin-bottom: 0;
+}
+
+.canvas-wrapper.view-split .hud-val {
+  font-size: 0.85rem;
+}
+
+.canvas-wrapper.view-split .hud-type {
+  font-size: 0.62rem;
+  margin-top: 0;
+}
+
+.canvas-wrapper.view-split .three-overlay {
+  top: 10px;
+  right: 10px;
+  gap: 5px;
+}
+
+.canvas-wrapper.view-split .three-hud-stat {
+  display: none;
+}
+
+.canvas-wrapper.view-split .three-controls-quick .btn {
+  padding: 3px 6px;
+  font-size: 0.68rem;
 }
 
 /* Toolbar */
@@ -879,12 +945,12 @@ body {
 .learning-banner {
   background: linear-gradient(180deg, #111a2e 0%, #0d1424 100%);
   border-bottom: 2px solid #3b82f6;
-  padding: 12px 24px 14px 24px;
+  padding: 8px 20px 8px 20px;
   flex-shrink: 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   animation: fadeInDown 0.3s ease;
 }
 
@@ -904,7 +970,7 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .learning-stepper-nav {
@@ -917,14 +983,14 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #94a3b8;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-family: var(--font-sans);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.2s;
 }
 
@@ -950,11 +1016,11 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -969,59 +1035,59 @@ body {
 }
 
 .step-line {
-  width: 14px;
+  width: 12px;
   height: 2px;
   background: rgba(255, 255, 255, 0.15);
 }
 
 .learning-banner-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .learning-banner-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 10px 16px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
 }
 
 .step-meta-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .step-badge {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #ffffff;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   letter-spacing: 0.03em;
 }
 
 .step-title {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #f8fafc;
 }
 
 .step-goal {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #38bdf8;
   font-weight: 500;
 }
 
 .step-narrative {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #cbd5e1;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .step-hint-box {
@@ -1030,17 +1096,17 @@ body {
   gap: 8px;
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .hint-icon {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .step-action-text {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: #fde68a;
   font-weight: 500;
 }

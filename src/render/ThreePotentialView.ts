@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Particle } from '../physics/Particle.ts';
 import { CoulombEngine } from '../physics/CoulombEngine.ts';
+import { TestParticle } from '../physics/TestParticle.ts';
 
 export class ThreePotentialView {
   private container: HTMLElement;
@@ -18,6 +19,7 @@ export class ThreePotentialView {
   private wireframeMesh: THREE.LineSegments;
   private geometry: THREE.PlaneGeometry;
   private particleMeshes: THREE.Mesh[] = [];
+  private testParticleMeshes: THREE.Mesh[] = [];
 
   private planeWidth: number = 320;
   private planeHeight: number = 220;
@@ -279,6 +281,79 @@ export class ThreePotentialView {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+  }
+
+  /**
+   * Synchronize active test particles into 3D glowing spheres on the potential surface
+   */
+  public updateTestParticles(testParticles: TestParticle[], canvas2DW: number, canvas2DH: number): void {
+    if (this.isDestroyed) return;
+
+    // Adjust mesh count to match testParticles
+    while (this.testParticleMeshes.length < testParticles.length) {
+      const sphereGeo = new THREE.SphereGeometry(5.5, 16, 16);
+      const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0xfacc15,
+        emissive: 0xfacc15,
+        emissiveIntensity: 0.95,
+        roughness: 0.1,
+        metalness: 0.2
+      });
+      const mesh = new THREE.Mesh(sphereGeo, sphereMat);
+      this.scene.add(mesh);
+      this.testParticleMeshes.push(mesh);
+    }
+
+    while (this.testParticleMeshes.length > testParticles.length) {
+      const mesh = this.testParticleMeshes.pop();
+      if (mesh) {
+        this.scene.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+      }
+    }
+
+    // Position each 3D test particle directly on the potential landscape
+    for (let i = 0; i < testParticles.length; i++) {
+      const tp = testParticles[i];
+      const mesh = this.testParticleMeshes[i];
+      if (!mesh) continue;
+
+      const x3D = ((tp.x / canvas2DW) - 0.5) * this.planeWidth;
+      const z3D = ((tp.y / canvas2DH) - 0.5) * this.planeHeight;
+      const y3D = this.engine.calculatePotentialHeight(tp.x, tp.y, this.particles);
+
+      mesh.position.set(x3D, y3D + 5.5, z3D);
+
+      const isPos = tp.q > 0;
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+      const targetColor = isPos ? 0xfacc15 : 0x06b6d4;
+      mat.color.setHex(targetColor);
+      mat.emissive.setHex(targetColor);
+      mesh.scale.setScalar(tp.isAlive ? 1 : 0.3);
+    }
+
+    this.render3D();
+  }
+
+  public clearTestParticleMeshes(): void {
+    for (const mesh of this.testParticleMeshes) {
+      this.scene.remove(mesh);
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+    }
+    this.testParticleMeshes = [];
+    this.render3D();
+  }
+
+  /**
+   * Set optimal camera perspective for split view, framing both mountain and valley
+   */
+  public setOptimalSplitCamera(): void {
+    this.camera.position.set(0, 160, 240);
+    this.controls.target.set(0, -5, 0);
+    this.controls.update();
+    this.render3D();
   }
 
   public resetCamera(): void {

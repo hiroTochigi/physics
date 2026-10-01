@@ -11,7 +11,7 @@ export class TestParticle {
   public trail: Vector2D[] = [];
   public maxTrail: number = 30;
   public isAlive: boolean = true;
-  public radius: number = 6;
+  public radius: number = 7;
 
   constructor(x: number, y: number, q: number = 0.5) {
     this.x = x;
@@ -36,17 +36,17 @@ export class TestParticle {
 
     // Clamp max acceleration to prevent erratic jumps near charges
     const aMag = Math.hypot(ax, ay);
-    const maxA = 3500;
+    const maxA = 2400;
     const aScale = aMag > maxA ? maxA / aMag : 1;
 
     // Light drag damping for stable visual flow
-    const damping = 0.97;
+    const damping = 0.96;
     this.vx = (this.vx + ax * aScale * dt) * damping;
     this.vy = (this.vy + ay * aScale * dt) * damping;
 
-    // Clamp speed
+    // Clamp speed to graceful visible speed (~200px/s)
     const speed = Math.hypot(this.vx, this.vy);
-    const maxSpeed = 350;
+    const maxSpeed = 200;
     if (speed > maxSpeed) {
       this.vx = (this.vx / speed) * maxSpeed;
       this.vy = (this.vy / speed) * maxSpeed;
