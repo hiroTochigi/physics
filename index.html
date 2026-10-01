@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>クーロンの法則 インタラクティブ・シミュレーター (Coulomb's Law Simulator)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-Bs_rjPrX.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BxK3KD5s.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h1>クーロンの法則 シミュレーター</h1>
+          <p class="subtitle">Coulomb's Law Interactive Lab &bull; <span class="math-expr">$F = k \frac{|q_1 q_2|}{r^2}$</span></p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <button type="button" class="btn btn-sm btn-accent" id="btn-toggle-learning">
+          <span class="icon">🎓</span> 探究学習モード
+        </button>
+        <span class="badge badge-primary">Phase 1: 粒子・力・グラフ連動</span>
+        <span class="badge badge-secondary">作用・反作用の可視化</span>
+      </div>
+    </header>
+
+    <!-- Learning Scenario Stepper Banner -->
+    <div id="learning-stepper-banner" class="learning-banner hidden">
+      <div class="learning-banner-top">
+        <div class="learning-stepper-nav">
+          <button type="button" class="step-dot active" data-step="0"><span class="step-num">1</span> <span class="step-name">作用・反作用</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="1"><span class="step-num">2</span> <span class="step-name">逆二乗則</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="2"><span class="step-num">3</span> <span class="step-name">3D電位</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="3"><span class="step-num">4</span> <span class="step-name">手計算課題</span></button>
+        </div>
+        <div class="learning-banner-actions">
+          <button type="button" class="btn btn-xs btn-ghost" id="btn-prev-step" disabled>&larr; 前のステップ</button>
+          <button type="button" class="btn btn-xs btn-primary" id="btn-next-step">次のステップ &rarr;</button>
+          <button type="button" class="btn btn-xs btn-outline" id="btn-exit-learning">✕ 終了</button>
+        </div>
+      </div>
+      <div class="learning-banner-body">
+        <div class="step-meta-row">
+          <span class="step-badge" id="step-badge">Step 1: 直感の獲得</span>
+          <h3 class="step-title" id="step-title">引力・斥力と「作用・反作用」の発見</h3>
+        </div>
+        <p class="step-goal" id="step-goal">目標: ...</p>
+        <p class="step-narrative" id="step-narrative">...</p>
+        <div class="step-hint-box" id="step-hint-box">
+          <span class="hint-icon">💡</span>
+          <span class="hint-text" id="step-action-text">...</span>
+          <button type="button" class="btn btn-xs btn-accent" id="btn-banner-action" style="display: none; margin-left: auto;">⚡ テスト電荷を転がす</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Left Panel: 2D Interactive Physics Stage -->
+      <section class="stage-container">
+        <div class="stage-header">
+          <div class="stage-title">
+            <span class="dot live-dot"></span>
+            <h2>荷電粒子インタラクション</h2>
+          </div>
+          <!-- View Mode Tabs -->
+          <div class="view-mode-tabs" role="tablist">
+            <button type="button" class="tab-view-btn active" id="tab-view-2d" data-view="2d">
+              <span>2D 平面</span>
+            </button>
+            <button type="button" class="tab-view-btn" id="tab-view-3d" data-view="3d">
+              <span>3D 電位曲面</span>
+            </button>
+            <button type="button" class="tab-view-btn" id="tab-view-split" data-view="split">
+              <span>スプリット表示</span>
+            </button>
+          </div>
+          <div class="stage-hints">
+            <span class="hint-pill">💡 電荷をドラッグして動かせます</span>
+          </div>
+        </div>
+        <div class="canvas-wrapper view-2d" id="canvas-wrapper">
+          <div class="canvas-pane pane-2d" id="pane-2d">
+            <div class="pane-badge pane-badge-2d">2D 電界・力線</div>
+            <canvas id="sim-canvas"></canvas>
+            <div id="canvas-overlay" class="canvas-overlay">
+              <div class="hud-stat hud-force">
+                <span class="hud-label">作用する力 <span class="math-expr">$F$</span></span>
+                <span class="hud-val" id="hud-force-val">0.00 N</span>
+                <span class="hud-type" id="hud-force-type">斥力（反発）</span>
+              </div>
+              <div class="hud-stat hud-dist">
+                <span class="hud-label">粒子間距離 <span class="math-expr">$r$</span></span>
+                <span class="hud-val" id="hud-dist-val">0.00 m</span>
+              </div>
+            </div>
+          </div>
+          <div class="canvas-pane pane-3d" id="pane-3d">
+            <div class="pane-badge pane-badge-3d">3D 電位曲面（山と谷）</div>
+            <canvas id="potential-canvas-3d"></canvas>
+            <div class="three-overlay">
+              <div class="three-hud-stat">
+                <span class="hud-label">3D 電位空間（山: 正電位 / 谷: 負電位）</span>
+              </div>
+              <div class="three-controls-quick">
+                <button type="button" class="btn btn-xs btn-ghost active" id="btn-3d-wireframe">ワイヤーフレーム</button>
+                <button type="button" class="btn btn-xs btn-ghost" id="btn-3d-autorotate">自動回転</button>
+                <button type="button" class="btn btn-xs btn-ghost" id="btn-3d-reset-cam">視点リセット</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-toolbar">
+          <div class="quick-presets">
+            <span class="toolbar-label">プリセット:</span>
+            <button class="btn btn-sm btn-ghost" id="preset-attract">異符号（引力 + -）</button>
+            <button class="btn btn-sm btn-ghost" id="preset-repel">同符号（斥力 + +）</button>
+            <button class="btn btn-sm btn-ghost" id="preset-ratio">電荷差（+4μC & +1μC）</button>
+            <button class="btn btn-sm btn-ghost" id="preset-reset">初期配置</button>
+          </div>
+          <div class="stage-toggles">
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-grid" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">グリッド</span>
+            </label>
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-vectors" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">力ベクトル</span>
+            </label>
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-field-lines" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">電気力線</span>
+            </label>
+            <label class="toggle-control">
+              <input type="checkbox" id="chk-efield" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">電場ベクトル</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Graphs & Control Panel -->
+      <aside class="sidebar">
+        <!-- Real-time F-r Graph Card -->
+        <div class="card graph-card">
+          <div class="card-header">
+            <h3><span class="math-expr">$F(r)$</span> リアルタイムプロット</h3>
+            <span class="card-tag">逆二乗則 <span class="math-expr">$1/r^2$</span></span>
+          </div>
+          <div class="card-function" id="card-function">
+            <span class="func-label">理論関数式:</span>
+            <span class="func-expr" id="func-formula-display"></span>
+          </div>
+          <div class="graph-wrapper">
+            <canvas id="graph-canvas"></canvas>
+          </div>
+          <div class="graph-legend">
+            <span class="legend-item"><span class="legend-color theoretical-line"></span>理論曲線 <span class="math-expr">$F(r)$</span></span>
+            <span class="legend-item"><span class="legend-color live-point"></span>現在の動作点</span>
+          </div>
+        </div>
+
+        <!-- Phase 2: Electric Field & Test Particle Card -->
+        <div class="card field-card">
+          <div class="card-header">
+            <h3>場の可視化 & テスト電荷</h3>
+            <span class="card-tag">Phase 2</span>
+          </div>
+          <div class="test-particle-controls">
+            <div class="test-charge-row">
+              <span class="field-sublabel">テスト電荷の極性:</span>
+              <div class="polarity-group">
+                <button type="button" class="btn btn-xs btn-outline active" id="btn-test-pos">+ 正電荷</button>
+                <button type="button" class="btn btn-xs btn-outline" id="btn-test-neg">− 負電荷</button>
+              </div>
+            </div>
+            <div class="test-actions-row">
+              <button type="button" class="btn btn-sm btn-primary" id="btn-spawn-test">
+                <span>⚡ テスト電荷を放出</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-clear-test">
+                <span>クリア</span>
+              </button>
+            </div>
+            <p class="test-particle-hint">💡 キャンバス上を <strong>Shift + クリック</strong> してもテスト電荷を任意の位置に配置できます。</p>
+          </div>
+        </div>
+
+        <!-- Educational Challenges Card -->
+        <div class="card challenges-card" id="challenges-card">
+          <div class="card-header">
+            <h3>📝 演習課題 & 手計算答え合わせ</h3>
+            <span class="card-tag">テスト対策</span>
+          </div>
+          <div class="challenge-tab-row">
+            <div class="challenge-tab-group" role="tablist">
+              <button type="button" class="btn-challenge-tab active" data-id="challenge-1">課題1</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-2">課題2</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-3">課題3</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-4">課題4</button>
+            </div>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-random-challenge" title="数値をランダムに変えた新しい問題を作ります">🎲 ランダム生成</button>
+          </div>
+          <div class="challenge-body">
+            <div class="challenge-meta">
+              <span class="challenge-diff-badge" id="challenge-diff">入門</span>
+              <span class="challenge-title-text" id="challenge-title">課題 1: 異符号の引力と基本計算</span>
+            </div>
+            <div class="challenge-desc" id="challenge-desc"></div>
+            
+            <!-- Answer Form -->
+            <form id="form-challenge-answer" class="challenge-form" onsubmit="return false;">
+              <div class="form-row">
+                <label for="input-challenge-force" class="form-label">計算した力の大きさ <span class="math-expr">$F$</span> [N]:</label>
+                <input type="text" id="input-challenge-force" class="challenge-input" placeholder="例: 0.054 または 5.4e-2" required />
+              </div>
+              <div class="form-row direction-row">
+                <span class="form-label">力の向き:</span>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="challenge-dir" value="attract" checked />
+                    <span>引力（引き合う）</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="challenge-dir" value="repel" />
+                    <span>斥力（反発する）</span>
+                  </label>
+                </div>
+              </div>
+              <div class="challenge-actions">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-submit-answer">判定する</button>
+                <button type="button" class="btn btn-sm btn-ghost" id="btn-sync-to-stage" title="シミュレーターの電荷と距離をこの問題と同じ値にセットします">🔬 シミュレーターで再現</button>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-toggle-solution">📖 手計算解説</button>
+              </div>
+            </form>
+
+            <div id="challenge-feedback" class="challenge-feedback hidden"></div>
+
+            <!-- Step-by-Step Solution Accordion -->
+            <div id="challenge-solution-drawer" class="solution-drawer hidden">
+              <div class="solution-header">
+                <h4>📐 ステップ別手計算解説</h4>
+              </div>
+              <div id="solution-steps-list" class="solution-steps-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Card -->
+        <div class="card controls-card">
+          <div class="card-header">
+            <h3>電荷パラメーター</h3>
+          </div>
+
+          <!-- Charge 1 -->
+          <div class="charge-control-group q1-group">
+            <div class="charge-title-row">
+              <div class="charge-badge positive" id="q1-badge">
+                <span class="badge-symbol">+</span>
+                <span>電荷 1 (<span class="math-expr">$q_1$</span>)</span>
+              </div>
+              <div class="charge-val-display" id="q1-val-display">+2.0 μC</div>
+            </div>
+            <div class="slider-row">
+              <input type="range" id="q1-slider" min="-10" max="10" step="0.5" value="2" class="range-slider" />
+            </div>
+            <div class="quick-charge-btns">
+              <button class="btn-micro" data-target="q1" data-val="-5">-5</button>
+              <button class="btn-micro" data-target="q1" data-val="-2">-2</button>
+              <button class="btn-micro" data-target="q1" data-val="0">0</button>
+              <button class="btn-micro active" data-target="q1" data-val="2">+2</button>
+              <button class="btn-micro" data-target="q1" data-val="5">+5</button>
+              <button class="btn-micro sign-toggle" id="q1-toggle-sign">±反転</button>
+            </div>
+          </div>
+
+          <!-- Charge 2 -->
+          <div class="charge-control-group q2-group">
+            <div class="charge-title-row">
+              <div class="charge-badge negative" id="q2-badge">
+                <span class="badge-symbol">-</span>
+                <span>電荷 2 (<span class="math-expr">$q_2$</span>)</span>
+              </div>
+              <div class="charge-val-display" id="q2-val-display">-2.0 μC</div>
+            </div>
+            <div class="slider-row">
+              <input type="range" id="q2-slider" min="-10" max="10" step="0.5" value="-2" class="range-slider" />
+            </div>
+            <div class="quick-charge-btns">
+              <button class="btn-micro" data-target="q2" data-val="-5">-5</button>
+              <button class="btn-micro active" data-target="q2" data-val="-2">-2</button>
+              <button class="btn-micro" data-target="q2" data-val="0">0</button>
+              <button class="btn-micro" data-target="q2" data-val="2">+2</button>
+              <button class="btn-micro" data-target="q2" data-val="5">+5</button>
+              <button class="btn-micro sign-toggle" id="q2-toggle-sign">±反転</button>
+            </div>
+          </div>
+
+          <!-- Educational Formula Callout -->
+          <div class="formula-box">
+            <div class="formula-title">📖 クーロンの法則（関数特性）</div>
+            <div class="formula-math" id="formula-primary">
+              $$F(r) = k \cdot \frac{|q_1 q_2|}{r^2}$$
+            </div>
+            <div class="formula-dynamic" id="formula-dynamic">
+            </div>
+            <ul class="formula-notes">
+              <li><strong>作用・反作用の法則</strong>: 電荷1と2の受ける力は<strong>常に同じ大きさ・逆向き</strong> (<span class="math-expr">$\vec{F}_{12} = -\vec{F}_{21}$</span>)。</li>
+              <li><strong>距離の逆二乗減衰</strong>: 距離が2倍で力は <strong><span class="math-expr">$1/4$</span></strong>、3倍で <strong><span class="math-expr">$1/9$</span></strong> に急激に減少。</li>
+              <li><strong>クーロン定数</strong>: <span class="math-expr">$k \approx 8.988 \times 10^9\ \text{N}\cdot\text{m}^2/\text{C}^2$</span></li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>
