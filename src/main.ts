@@ -3,6 +3,9 @@ import { CoulombEngine } from './physics/CoulombEngine.ts';
 import { Canvas2DView } from './render/Canvas2DView.ts';
 import { GraphView } from './render/GraphView.ts';
 import { ThreePotentialView } from './render/ThreePotentialView.ts';
+import { LearningScenario } from './learning/LearningScenario.ts';
+import { ChallengeManager } from './learning/ChallengeManager.ts';
+import { Challenge, ScenarioStep } from './learning/ChallengeTypes.ts';
 
 import katex from 'katex';
 import renderMathInElement from 'katex/contrib/auto-render';
@@ -371,6 +374,354 @@ updateUI();
 canvasView.render();
 threeView.updateSurface();
 
+// ========================================================
+// Learning Scenario & Challenges Controller
+// ========================================================
+
+const learningScenario = new LearningScenario();
+const challengeManager = new ChallengeManager();
+
+// Learning Banner Elements
+const btnToggleLearning = document.getElementById('btn-toggle-learning');
+const learningBanner = document.getElementById('learning-stepper-banner');
+const btnPrevStep = document.getElementById('btn-prev-step') as HTMLButtonElement | null;
+const btnNextStep = document.getElementById('btn-next-step') as HTMLButtonElement | null;
+const btnExitLearning = document.getElementById('btn-exit-learning');
+const stepBadge = document.getElementById('step-badge');
+const stepTitle = document.getElementById('step-title');
+const stepGoal = document.getElementById('step-goal');
+const stepNarrative = document.getElementById('step-narrative');
+const stepActionText = document.getElementById('step-action-text');
+
+// Challenges Card Elements
+const btnChallengeTabs = document.querySelectorAll('.btn-challenge-tab');
+const btnRandomChallenge = document.getElementById('btn-random-challenge');
+const challengeDiff = document.getElementById('challenge-diff');
+const challengeTitle = document.getElementById('challenge-title');
+const challengeDesc = document.getElementById('challenge-desc');
+const inputChallengeForce = document.getElementById('input-challenge-force') as HTMLInputElement | null;
+const btnSubmitAnswer = document.getElementById('btn-submit-answer');
+const btnSyncToStage = document.getElementById('btn-sync-to-stage');
+const btnToggleSolution = document.getElementById('btn-toggle-solution');
+const challengeFeedback = document.getElementById('challenge-feedback');
+const challengeSolutionDrawer = document.getElementById('challenge-solution-drawer');
+const solutionStepsList = document.getElementById('solution-steps-list');
+
+let currentHighlightedEl: HTMLElement | null = null;
+
+function clearTutorialHighlight(): void {
+  if (currentHighlightedEl) {
+    currentHighlightedEl.classList.remove('tutorial-highlight');
+    currentHighlightedEl = null;
+  }
+}
+
+function updateLearningStepUI(step: ScenarioStep): void {
+  if (!learningBanner) return;
+
+  // Update text
+  if (stepBadge) stepBadge.textContent = step.badge;
+  if (stepTitle) stepTitle.textContent = step.title;
+  if (stepGoal) stepGoal.textContent = `🎯 目標: ${step.goal}`;
+  if (stepNarrative) stepNarrative.textContent = step.narrative;
+  if (stepActionText) stepActionText.textContent = step.recommendedAction;
+
+  // Update Step Dots
+  const stepDots = document.querySelectorAll('.step-dot');
+  stepDots.forEach((dot, index) => {
+    dot.classList.remove('active', 'completed');
+    if (index === step.stepIndex - 1) {
+      dot.classList.add('active');
+    } else if (index < step.stepIndex - 1) {
+      dot.classList.add('completed');
+    }
+  });
+
+  // Prev / Next button states
+  if (btnPrevStep) {
+    btnPrevStep.disabled = step.stepIndex === 1;
+  }
+  if (btnNextStep) {
+    if (step.stepIndex === learningScenario.getSteps().length) {
+      btnNextStep.textContent = '🎉 学習完了！';
+    } else {
+      btnNextStep.innerHTML = '次のステップ &rarr;';
+    }
+  }
+
+  // Tutorial Highlighting
+  clearTutorialHighlight();
+  if (step.highlightSelector) {
+    const target = document.querySelector(step.highlightSelector) as HTMLElement | null;
+    if (target) {
+      target.classList.add('tutorial-highlight');
+      currentHighlightedEl = target;
+    }
+  }
+
+  // Auto setup stage if specified
+  if (step.autoSetup) {
+    if (step.autoSetup.view) {
+      switchView(step.autoSetup.view);
+    }
+    if (step.autoSetup.q1 !== undefined) {
+      particles[0].q = step.autoSetup.q1;
+    }
+    if (step.autoSetup.q2 !== undefined) {
+      particles[1].q = step.autoSetup.q2;
+    }
+    if (step.autoSetup.vectors !== undefined) {
+      canvasView.showVectors = step.autoSetup.vectors;
+      chkVectors.checked = step.autoSetup.vectors;
+    }
+    if (step.autoSetup.fieldLines !== undefined && chkFieldLines) {
+      canvasView.showFieldLines = step.autoSetup.fieldLines;
+      chkFieldLines.checked = step.autoSetup.fieldLines;
+    }
+    if (step.autoSetup.efield !== undefined && chkEField) {
+      canvasView.showEFieldGrid = step.autoSetup.efield;
+      chkEField.checked = step.autoSetup.efield;
+    }
+    canvasView.render();
+    updateUI();
+  }
+}
+
+// Learning Scenario Event Handlers
+learningScenario.onModeToggle((active) => {
+  if (active) {
+    learningBanner?.classList.remove('hidden');
+    btnToggleLearning?.classList.add('active');
+    if (btnToggleLearning) btnToggleLearning.textContent = '✕ 学習モード中';
+  } else {
+    learningBanner?.classList.add('hidden');
+    btnToggleLearning?.classList.remove('active');
+    if (btnToggleLearning) btnToggleLearning.innerHTML = '<span class="icon">🎓</span> 探究学習モード';
+    clearTutorialHighlight();
+  }
+});
+
+learningScenario.onStepChange((step) => {
+  updateLearningStepUI(step);
+});
+
+btnToggleLearning?.addEventListener('click', () => {
+  learningScenario.toggle();
+});
+
+btnExitLearning?.addEventListener('click', () => {
+  learningScenario.exit();
+});
+
+btnPrevStep?.addEventListener('click', () => {
+  learningScenario.prevStep();
+});
+
+btnNextStep?.addEventListener('click', () => {
+  if (learningScenario.getCurrentStepIndex() === learningScenario.getSteps().length - 1) {
+    // If on last step, finish and highlight challenges
+    learningScenario.exit();
+    const chCard = document.getElementById('challenges-card');
+    chCard?.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    learningScenario.nextStep();
+  }
+});
+
+// Step dot navigation clicks
+document.querySelectorAll('.step-dot').forEach((dot) => {
+  dot.addEventListener('click', () => {
+    const stepIdx = parseInt(dot.getAttribute('data-step') || '0', 10);
+    learningScenario.goToStep(stepIdx);
+  });
+});
+
+// Challenges UI Rendering
+function renderCurrentChallenge(challenge: Challenge): void {
+  if (challengeDiff) {
+    challengeDiff.textContent = challenge.difficulty;
+    if (challenge.difficulty === '入門') {
+      challengeDiff.style.background = '#0284c7';
+    } else if (challenge.difficulty === '基本') {
+      challengeDiff.style.background = '#2563eb';
+    } else if (challenge.difficulty === '応用') {
+      challengeDiff.style.background = '#d97706';
+    } else if (challenge.difficulty === '発展') {
+      challengeDiff.style.background = '#7c3aed';
+    } else {
+      challengeDiff.style.background = '#059669';
+    }
+  }
+
+  if (challengeTitle) {
+    challengeTitle.textContent = challenge.title;
+  }
+
+  if (challengeDesc) {
+    challengeDesc.innerHTML = challenge.description;
+    try {
+      renderMathInElement(challengeDesc, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false
+      });
+    } catch (e) {
+      console.warn('Math render error in challenge description:', e);
+    }
+  }
+
+  // Clear inputs & feedback
+  if (inputChallengeForce) {
+    inputChallengeForce.value = '';
+  }
+  if (challengeFeedback) {
+    challengeFeedback.className = 'challenge-feedback hidden';
+    challengeFeedback.textContent = '';
+  }
+
+  // Hide solution drawer until requested
+  if (challengeSolutionDrawer) {
+    challengeSolutionDrawer.classList.add('hidden');
+    if (btnToggleSolution) btnToggleSolution.textContent = '📖 手計算解説を見る';
+  }
+
+  // Render solutions inside drawer
+  renderSolutionSteps(challenge);
+}
+
+function renderSolutionSteps(challenge: Challenge): void {
+  if (!solutionStepsList) return;
+  solutionStepsList.innerHTML = '';
+
+  challenge.solutionSteps.forEach((step) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'solution-step-item';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'solution-step-title';
+    titleEl.textContent = `Step ${step.stepNumber}: ${step.title}`;
+    stepEl.appendChild(titleEl);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'solution-step-body';
+    bodyEl.innerHTML = step.explanation;
+    stepEl.appendChild(bodyEl);
+
+    if (step.formulaLatex) {
+      const mathEl = document.createElement('div');
+      mathEl.className = 'solution-step-math';
+      try {
+        katex.render(step.formulaLatex, mathEl, {
+          displayMode: true,
+          throwOnError: false
+        });
+      } catch (err) {
+        mathEl.textContent = step.formulaLatex;
+      }
+      stepEl.appendChild(mathEl);
+    }
+
+    // Render any inline math in explanation
+    try {
+      renderMathInElement(bodyEl, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false
+      });
+    } catch (e) {}
+
+    solutionStepsList.appendChild(stepEl);
+  });
+}
+
+function applyChallengeToSimulator(challenge: Challenge): void {
+  // Set charges
+  particles[0].q = challenge.q1_uC;
+  particles[1].q = challenge.q2_uC;
+
+  // Set distance r by positioning particles around center
+  const rect = simCanvas.parentElement?.getBoundingClientRect();
+  const w = rect && rect.width > 0 ? rect.width : 600;
+  const h = rect && rect.height > 0 ? rect.height : 400;
+  const centerX = w / 2;
+  const centerY = h / 2;
+
+  // pixelsPerMeter: 200px = 1m
+  const distPx = challenge.r_m * engine.pixelsPerMeter;
+  particles[0].x = Math.max(60, centerX - distPx / 2);
+  particles[0].y = centerY;
+  particles[1].x = Math.min(w - 60, centerX + distPx / 2);
+  particles[1].y = centerY;
+
+  canvasView.render();
+  updateUI();
+
+  if (challengeFeedback) {
+    challengeFeedback.className = 'challenge-feedback success';
+    challengeFeedback.innerHTML = `🔬 シミュレーターの電荷を <strong>q₁ = ${challenge.q1_uC > 0 ? '+' : ''}${challenge.q1_uC} μC</strong>, <strong>q₂ = ${challenge.q2_uC > 0 ? '+' : ''}${challenge.q2_uC} μC</strong>, 距離 <strong>r = ${challenge.r_m.toFixed(2)} m</strong> に配置しました！左上のHUDと矢印を確認してみよう。`;
+  }
+}
+
+// Challenge tab selection
+btnChallengeTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    btnChallengeTabs.forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    const id = tab.getAttribute('data-id') || 'challenge-1';
+    const ch = challengeManager.selectChallengeById(id);
+    if (ch) {
+      renderCurrentChallenge(ch);
+    }
+  });
+});
+
+// Random challenge generation
+btnRandomChallenge?.addEventListener('click', () => {
+  btnChallengeTabs.forEach((t) => t.classList.remove('active'));
+  const randomCh = challengeManager.generateRandomChallenge();
+  renderCurrentChallenge(randomCh);
+});
+
+// Submit Answer handler
+btnSubmitAnswer?.addEventListener('click', () => {
+  const forceStr = inputChallengeForce?.value || '';
+  const dirRadio = document.querySelector('input[name="challenge-dir"]:checked') as HTMLInputElement | null;
+  const dirStr = dirRadio ? dirRadio.value : 'attract';
+
+  const result = challengeManager.evaluateAnswer(forceStr, dirStr);
+
+  if (challengeFeedback) {
+    challengeFeedback.className = `challenge-feedback ${result.isCorrect ? 'success' : 'error'}`;
+    challengeFeedback.textContent = result.message;
+  }
+});
+
+// Sync to stage button
+btnSyncToStage?.addEventListener('click', () => {
+  const ch = challengeManager.getCurrentChallenge();
+  applyChallengeToSimulator(ch);
+});
+
+// Toggle solution drawer
+btnToggleSolution?.addEventListener('click', () => {
+  if (!challengeSolutionDrawer) return;
+  const isHidden = challengeSolutionDrawer.classList.contains('hidden');
+  if (isHidden) {
+    challengeSolutionDrawer.classList.remove('hidden');
+    if (btnToggleSolution) btnToggleSolution.textContent = '✕ 解説を閉じる';
+  } else {
+    challengeSolutionDrawer.classList.add('hidden');
+    if (btnToggleSolution) btnToggleSolution.textContent = '📖 手計算解説を見る';
+  }
+});
+
+// Initial Challenge Rendering
+renderCurrentChallenge(challengeManager.getCurrentChallenge());
+
 // Render static mathematical formulas with KaTeX
 try {
   renderMathInElement(document.body, {
@@ -393,8 +744,11 @@ declare global {
       canvasView: Canvas2DView;
       graphView: GraphView;
       threeView: ThreePotentialView;
+      learningScenario: LearningScenario;
+      challengeManager: ChallengeManager;
       switchView: (mode: '2d' | '3d' | 'split') => void;
       updateUI: () => void;
+      applyChallengeToSimulator: (ch: Challenge) => void;
     };
   }
 }
@@ -406,8 +760,12 @@ if (typeof window !== 'undefined') {
     canvasView,
     graphView,
     threeView,
+    learningScenario,
+    challengeManager,
     switchView,
     updateUI,
+    applyChallengeToSimulator,
   };
 }
+
 

@@ -21,10 +21,45 @@
         </div>
       </div>
       <div class="header-badges">
+        <button type="button" class="btn btn-sm btn-accent" id="btn-toggle-learning">
+          <span class="icon">🎓</span> 探究学習モード
+        </button>
         <span class="badge badge-primary">Phase 1: 粒子・力・グラフ連動</span>
         <span class="badge badge-secondary">作用・反作用の可視化</span>
       </div>
     </header>
+
+    <!-- Learning Scenario Stepper Banner -->
+    <div id="learning-stepper-banner" class="learning-banner hidden">
+      <div class="learning-banner-top">
+        <div class="learning-stepper-nav">
+          <button type="button" class="step-dot active" data-step="0"><span class="step-num">1</span> <span class="step-name">作用・反作用</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="1"><span class="step-num">2</span> <span class="step-name">逆二乗則</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="2"><span class="step-num">3</span> <span class="step-name">3D電位</span></button>
+          <div class="step-line"></div>
+          <button type="button" class="step-dot" data-step="3"><span class="step-num">4</span> <span class="step-name">手計算課題</span></button>
+        </div>
+        <div class="learning-banner-actions">
+          <button type="button" class="btn btn-xs btn-ghost" id="btn-prev-step" disabled>&larr; 前のステップ</button>
+          <button type="button" class="btn btn-xs btn-primary" id="btn-next-step">次のステップ &rarr;</button>
+          <button type="button" class="btn btn-xs btn-outline" id="btn-exit-learning">✕ 終了</button>
+        </div>
+      </div>
+      <div class="learning-banner-body">
+        <div class="step-meta-row">
+          <span class="step-badge" id="step-badge">Step 1: 直感の獲得</span>
+          <h3 class="step-title" id="step-title">引力・斥力と「作用・反作用」の発見</h3>
+        </div>
+        <p class="step-goal" id="step-goal">目標: ...</p>
+        <p class="step-narrative" id="step-narrative">...</p>
+        <div class="step-hint-box" id="step-hint-box">
+          <span class="hint-icon">💡</span>
+          <span class="hint-text" id="step-action-text">...</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Workspace -->
     <main class="workspace">
@@ -157,6 +192,66 @@
               </button>
             </div>
             <p class="test-particle-hint">💡 キャンバス上を <strong>Shift + クリック</strong> してもテスト電荷を任意の位置に配置できます。</p>
+          </div>
+        </div>
+
+        <!-- Educational Challenges Card -->
+        <div class="card challenges-card" id="challenges-card">
+          <div class="card-header">
+            <h3>📝 演習課題 & 手計算答え合わせ</h3>
+            <span class="card-tag">テスト対策</span>
+          </div>
+          <div class="challenge-tab-row">
+            <div class="challenge-tab-group" role="tablist">
+              <button type="button" class="btn-challenge-tab active" data-id="challenge-1">課題1</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-2">課題2</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-3">課題3</button>
+              <button type="button" class="btn-challenge-tab" data-id="challenge-4">課題4</button>
+            </div>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-random-challenge" title="数値をランダムに変えた新しい問題を作ります">🎲 ランダム生成</button>
+          </div>
+          <div class="challenge-body">
+            <div class="challenge-meta">
+              <span class="challenge-diff-badge" id="challenge-diff">入門</span>
+              <span class="challenge-title-text" id="challenge-title">課題 1: 異符号の引力と基本計算</span>
+            </div>
+            <div class="challenge-desc" id="challenge-desc"></div>
+            
+            <!-- Answer Form -->
+            <form id="form-challenge-answer" class="challenge-form" onsubmit="return false;">
+              <div class="form-row">
+                <label for="input-challenge-force" class="form-label">計算した力の大きさ <span class="math-expr">$F$</span> [N]:</label>
+                <input type="text" id="input-challenge-force" class="challenge-input" placeholder="例: 0.054 または 5.4e-2" required />
+              </div>
+              <div class="form-row direction-row">
+                <span class="form-label">力の向き:</span>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="challenge-dir" value="attract" checked />
+                    <span>引力（引き合う）</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="challenge-dir" value="repel" />
+                    <span>斥力（反発する）</span>
+                  </label>
+                </div>
+              </div>
+              <div class="challenge-actions">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-submit-answer">判定する</button>
+                <button type="button" class="btn btn-sm btn-ghost" id="btn-sync-to-stage" title="シミュレーターの電荷と距離をこの問題と同じ値にセットします">🔬 シミュレーターで再現</button>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-toggle-solution">📖 手計算解説</button>
+              </div>
+            </form>
+
+            <div id="challenge-feedback" class="challenge-feedback hidden"></div>
+
+            <!-- Step-by-Step Solution Accordion -->
+            <div id="challenge-solution-drawer" class="solution-drawer hidden">
+              <div class="solution-header">
+                <h4>📐 ステップ別手計算解説</h4>
+              </div>
+              <div id="solution-steps-list" class="solution-steps-list"></div>
+            </div>
           </div>
         </div>
 

@@ -110,10 +110,10 @@ export class CoulombEngine {
   public static formatForce(forceN: number): string {
     if (forceN < 1e-9) return '0.00 N';
     if (forceN < 1e-3) {
-      return `${(forceN * 1e6).toFixed(2)} μN`;
+      return `${(forceN * 1e6).toFixed(2)} μN (${forceN.toExponential(2)} N)`;
     }
     if (forceN < 1) {
-      return `${(forceN * 1e3).toFixed(2)} mN`;
+      return `${(forceN * 1e3).toFixed(2)} mN (${forceN.toFixed(3)} N)`;
     }
     if (forceN < 1000) {
       return `${forceN.toFixed(3)} N`;
