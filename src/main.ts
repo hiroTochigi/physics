@@ -2,6 +2,7 @@ import { Particle } from './physics/Particle.ts';
 import { CoulombEngine } from './physics/CoulombEngine.ts';
 import { Canvas2DView } from './render/Canvas2DView.ts';
 import { GraphView } from './render/GraphView.ts';
+import { ThreePotentialView } from './render/ThreePotentialView.ts';
 
 import katex from 'katex';
 import renderMathInElement from 'katex/contrib/auto-render';
@@ -10,8 +11,11 @@ import 'katex/dist/katex.min.css';
 // Initialize core components
 const engine = new CoulombEngine();
 
+const canvasWrapper = document.getElementById('canvas-wrapper')!;
 const simCanvas = document.getElementById('sim-canvas') as HTMLCanvasElement;
 const graphCanvas = document.getElementById('graph-canvas') as HTMLCanvasElement;
+const pane3D = document.getElementById('pane-3d')!;
+const potentialCanvas3D = document.getElementById('potential-canvas-3d') as HTMLCanvasElement;
 
 if (!simCanvas || !graphCanvas) {
   throw new Error('Canvas elements not found in DOM');
@@ -26,6 +30,10 @@ const canvasView = new Canvas2DView(simCanvas, engine);
 canvasView.setParticles(particles);
 
 const graphView = new GraphView(graphCanvas, engine);
+
+const threeView = new ThreePotentialView(pane3D, potentialCanvas3D, engine);
+threeView.setParticles(particles);
+
 
 // DOM Elements
 const hudForceVal = document.getElementById('hud-force-val')!;
@@ -120,7 +128,11 @@ function updateUI(): void {
       katex.render(`\\text{現在の関数式: } F(r) = \\frac{${cStr}}{r^2}\\ \\mathrm{[N]}`, formulaDynamic, { displayMode: false, throwOnError: false });
     }
   }
+
+  // 7. Update 3D Potential Landscape
+  threeView.updateSurface();
 }
+
 
 function updateChargeBadge(badgeEl: HTMLElement, q: number, labelIndex: string): void {
   const symbolSpan = badgeEl.querySelector('.badge-symbol')!;
@@ -293,6 +305,51 @@ if (btnClearTest) {
 }
 
 
+// View Mode Tabs (2D / 3D / Split)
+const tab2D = document.getElementById('tab-view-2d');
+const tab3D = document.getElementById('tab-view-3d');
+const tabSplit = document.getElementById('tab-view-split');
+
+const switchView = (mode: '2d' | '3d' | 'split') => {
+  canvasWrapper.className = `canvas-wrapper view-${mode}`;
+  [tab2D, tab3D, tabSplit].forEach((btn) => btn?.classList.remove('active'));
+  if (mode === '2d') tab2D?.classList.add('active');
+  if (mode === '3d') tab3D?.classList.add('active');
+  if (mode === 'split') tabSplit?.classList.add('active');
+
+  // Trigger resize and re-render
+  canvasView.handleResize();
+  threeView.handleResize();
+  canvasView.render();
+  threeView.updateSurface();
+};
+
+tab2D?.addEventListener('click', () => switchView('2d'));
+tab3D?.addEventListener('click', () => switchView('3d'));
+tabSplit?.addEventListener('click', () => switchView('split'));
+
+// 3D Quick Controls
+const btn3DWireframe = document.getElementById('btn-3d-wireframe');
+const btn3DAutoRotate = document.getElementById('btn-3d-autorotate');
+const btn3DResetCam = document.getElementById('btn-3d-reset-cam');
+
+btn3DWireframe?.addEventListener('click', () => {
+  threeView.showWireframe = !threeView.showWireframe;
+  threeView.updateSurface();
+  btn3DWireframe.classList.toggle('active', threeView.showWireframe);
+});
+
+btn3DAutoRotate?.addEventListener('click', () => {
+  const newAuto = !threeView.autoRotate;
+  threeView.setAutoRotate(newAuto);
+  btn3DAutoRotate.classList.toggle('active', newAuto);
+});
+
+
+btn3DResetCam?.addEventListener('click', () => {
+  threeView.resetCamera();
+});
+
 // Initialize positions to center of canvas on start
 window.addEventListener('load', () => {
   const rect = simCanvas.parentElement?.getBoundingClientRect();
@@ -304,6 +361,7 @@ window.addEventListener('load', () => {
   }
   canvasView.handleResize();
   graphView.handleResize();
+  threeView.handleResize();
   canvasView.render();
   updateUI();
 });
@@ -311,6 +369,7 @@ window.addEventListener('load', () => {
 // Initial update
 updateUI();
 canvasView.render();
+threeView.updateSurface();
 
 // Render static mathematical formulas with KaTeX
 try {
@@ -333,6 +392,8 @@ declare global {
       engine: CoulombEngine;
       canvasView: Canvas2DView;
       graphView: GraphView;
+      threeView: ThreePotentialView;
+      switchView: (mode: '2d' | '3d' | 'split') => void;
       updateUI: () => void;
     };
   }
@@ -344,6 +405,9 @@ if (typeof window !== 'undefined') {
     engine,
     canvasView,
     graphView,
+    threeView,
+    switchView,
     updateUI,
   };
 }
+

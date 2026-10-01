@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Phase 2: 場の可視化 & テスト電荷 E2Eテスト', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
+
 
   test('TC-FIELD-01: 電気力線と電場ベクトルの表示トグルが機能すること', async ({ page }) => {
     const chkFieldLines = page.locator('#chk-field-lines');

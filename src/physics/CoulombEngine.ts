@@ -255,5 +255,41 @@ export class CoulombEngine {
 
     return lines;
   }
+
+  /**
+   * Calculate electric potential V in Volts at coordinate (x, y)
+   */
+  public calculatePotential(x: number, y: number, particles: Particle[]): number {
+    let totalV = 0;
+    for (const p of particles) {
+      if (Math.abs(p.q) < 1e-6) continue;
+      const dx = x - p.x;
+      const dy = y - p.y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+      const distM = distPx / this.pixelsPerMeter;
+      const rEff = Math.sqrt(distM * distM + this.softeningDistance * this.softeningDistance);
+      const qCoulomb = p.q * 1e-6;
+      totalV += (CoulombEngine.K_E * qCoulomb) / rEff;
+    }
+    return totalV;
+  }
+
+  /**
+   * Calculate normalized 3D mesh height for potential surface
+   */
+  public calculatePotentialHeight(x: number, y: number, particles: Particle[]): number {
+    let height = 0;
+    for (const p of particles) {
+      if (Math.abs(p.q) < 1e-6) continue;
+      const dx = x - p.x;
+      const dy = y - p.y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+      const distM = distPx / this.pixelsPerMeter;
+      const rEff = Math.sqrt(distM * distM + 0.08 * 0.08);
+      height += (p.q * 18) / rEff;
+    }
+    return Math.max(-120, Math.min(120, height));
+  }
 }
+
 

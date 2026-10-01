@@ -176,6 +176,41 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+/* View Mode Tabs */
+.view-mode-tabs {
+  display: flex;
+  background: rgba(11, 15, 25, 0.7);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  gap: 2px;
+}
+
+.tab-view-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-view-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-view-btn.active {
+  background: var(--bg-card);
+  color: #38bdf8;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 .canvas-wrapper {
   flex: 1;
   position: relative;
@@ -183,13 +218,94 @@ body {
   touch-action: none;
 }
 
-#sim-canvas {
+.canvas-pane {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* 2D view */
+.canvas-wrapper.view-2d .pane-2d {
+  display: block;
+}
+.canvas-wrapper.view-2d .pane-3d {
+  display: none;
+}
+
+/* 3D view */
+.canvas-wrapper.view-3d .pane-2d {
+  display: none;
+}
+.canvas-wrapper.view-3d .pane-3d {
+  display: block;
+}
+
+/* Split view */
+.canvas-wrapper.view-split {
+  display: flex;
+}
+.canvas-wrapper.view-split .pane-2d {
+  position: relative;
+  flex: 1;
+  display: block;
+  border-right: 1px solid var(--border-color);
+}
+.canvas-wrapper.view-split .pane-3d {
+  position: relative;
+  flex: 1;
+  display: block;
+}
+
+#sim-canvas, #potential-canvas-3d {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#sim-canvas {
   cursor: crosshair;
+}
+
+#potential-canvas-3d {
+  cursor: grab;
+}
+
+#potential-canvas-3d:active {
+  cursor: grabbing;
+}
+
+/* Three Overlay */
+.three-overlay {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.three-overlay button {
+  pointer-events: auto;
+}
+
+.three-hud-stat {
+  background: rgba(19, 27, 46, 0.9);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.three-controls-quick {
+  display: flex;
+  gap: 6px;
 }
 
 /* Canvas Overlay HUD */
