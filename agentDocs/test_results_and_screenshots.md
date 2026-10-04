@@ -16,6 +16,11 @@ All Playwright E2E tests were executed and passed successfully. A dedicated scre
 | **TC-CANVAS-02** | Physics | Inverse square law: force diminishes as distance increases | **PASS** | [`TC-CANVAS-02.png`](file:///C:/Users/drago/projects/physics/test-screenshots/TC-CANVAS-02.png) |
 | **TC-CANVAS-03** | Physics | Newton's Third Law (action-reaction: $\vec{F}_{12} = -\vec{F}_{21}$) | **PASS** | [`TC-CANVAS-03.png`](file:///C:/Users/drago/projects/physics/test-screenshots/TC-CANVAS-03.png) |
 | **TC-CANVAS-04** | Physics | Boundary constraint enforcement during drag | **PASS** | [`TC-CANVAS-04.png`](file:///C:/Users/drago/projects/physics/test-screenshots/TC-CANVAS-04.png) |
+| **TC-MODE-01** | Multi-Mode | Header tab switching between Coulomb and Poynting modes | **PASS** | Automated Playwright Verification |
+| **TC-MODE-02** | Poynting 3D/2D | Multi-view (3D / 2D slice / split) switching and HUD values | **PASS** | Automated Playwright Verification |
+| **TC-MODE-03** | Poynting UX | KaTeX mathematical equation ⇄ Intuitive Japanese toggle | **PASS** | Automated Playwright Verification |
+| **TC-MODE-04** | Poynting Learning | 4-step inquiry scenario walkthrough and challenge grading | **PASS** | Automated Playwright Verification |
+| **TC-MODE-05** | Routing | URL query deep-linking (`/?mode=poynting`) direct mount | **PASS** | Automated Playwright Verification |
 
 ---
 

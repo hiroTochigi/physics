@@ -16,10 +16,30 @@
       <div class="header-brand">
         <span class="logo-icon">⚡</span>
         <div>
-          <h1>クーロンの法則 シミュレーター</h1>
-          <p class="subtitle">Coulomb's Law Interactive Lab &bull; <span class="math-expr">$F = k \frac{|q_1 q_2|}{r^2}$</span></p>
+          <h1 id="header-title-text">クーロンの法則 シミュレーター</h1>
+          <p class="subtitle" id="header-subtitle-text">Coulomb's Law Interactive Lab &bull; <span class="math-expr">$F = k \frac{|q_1 q_2|}{r^2}$</span></p>
         </div>
       </div>
+
+      <!-- Mode Switcher Tabs -->
+      <nav class="mode-nav-tabs" role="tablist" id="mode-nav-tabs">
+        <button type="button" class="mode-tab active" id="tab-mode-coulomb" data-mode="coulomb" role="tab" aria-selected="true">
+          <span class="mode-tab-icon">⚡</span>
+          <span class="mode-tab-label">クーロンの法則</span>
+          <span class="mode-tab-tag">静電場</span>
+        </button>
+        <button type="button" class="mode-tab" id="tab-mode-poynting" data-mode="poynting" role="tab" aria-selected="false">
+          <span class="mode-tab-icon">🌊</span>
+          <span class="mode-tab-label">ポインティングの定理</span>
+          <span class="mode-tab-tag">電磁エネルギー流</span>
+        </button>
+        <button type="button" class="mode-tab" id="tab-mode-mystery" data-mode="mystery" role="tab" aria-selected="false">
+          <span class="mode-tab-icon">🕵️</span>
+          <span class="mode-tab-label">ミステリー捜査</span>
+          <span class="mode-tab-tag">消失事件</span>
+        </button>
+      </nav>
+
       <div class="header-badges">
         <button type="button" class="btn btn-sm btn-accent" id="btn-toggle-learning">
           <span class="icon">🎓</span> 探究学習モード
@@ -28,6 +48,11 @@
         <span class="badge badge-secondary">作用・反作用の可視化</span>
       </div>
     </header>
+
+    <!-- ========================================================
+         Coulomb's Law Simulator View Container
+         ======================================================== -->
+    <div id="coulomb-mode-view" class="mode-view active" data-mode-view="coulomb">
 
     <!-- Learning Scenario Stepper Banner -->
     <div id="learning-stepper-banner" class="learning-banner hidden">
@@ -325,7 +350,406 @@
         </div>
       </aside>
     </main>
+    </div><!-- End #coulomb-mode-view -->
+
+    <!-- ========================================================
+         Poynting's Theorem & Electromagnetic Energy View Container
+         ======================================================== -->
+    <div id="poynting-mode-view" class="mode-view hidden" data-mode-view="poynting">
+      <!-- Interactive KaTeX Math & Intuition Bar -->
+      <div class="poynting-math-bar">
+        <div class="poynting-formula-box" id="poynting-formula-box">
+          <!-- Populated by PoyntingMode: KaTeX or Intuitive Japanese -->
+        </div>
+        <div class="poynting-math-actions">
+          <button type="button" class="btn btn-xs btn-outline" id="btn-poynting-toggle-math">🇯🇵 直感日本語モード</button>
+          <button type="button" class="btn btn-xs btn-accent" id="btn-poynting-toggle-learning">🎓 探究学習モード</button>
+          <button type="button" class="btn btn-xs btn-warning" id="btn-poynting-open-mystery">🕵️ 80J消失事件を捜査</button>
+        </div>
+      </div>
+
+      <!-- Poynting Learning Stepper Banner -->
+      <div id="poynting-learning-banner" class="learning-banner hidden">
+        <div class="learning-banner-top">
+          <div class="learning-stepper-nav">
+            <button type="button" class="poynting-step-dot active" data-step="0"><span class="step-num">1</span> <span class="step-name">空間のエネルギー</span></button>
+            <div class="step-line"></div>
+            <button type="button" class="poynting-step-dot" data-step="1"><span class="step-num">2</span> <span class="step-name">時間微分</span></button>
+            <div class="step-line"></div>
+            <button type="button" class="poynting-step-dot" data-step="2"><span class="step-num">3</span> <span class="step-name">流れるエネルギー</span></button>
+            <div class="step-line"></div>
+            <button type="button" class="poynting-step-dot" data-step="3"><span class="step-num">4</span> <span class="step-name">宇宙の家計簿</span></button>
+          </div>
+          <div class="learning-banner-actions">
+            <button type="button" class="btn btn-xs btn-ghost" id="btn-poynting-prev-step" disabled>&larr; 前のステップ</button>
+            <button type="button" class="btn btn-xs btn-primary" id="btn-poynting-next-step">次のステップ &rarr;</button>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-poynting-exit-learning">✕ 終了</button>
+          </div>
+        </div>
+        <div class="learning-banner-body">
+          <div class="step-meta-row">
+            <span class="step-badge" id="poynting-step-badge">Step 1</span>
+            <h3 class="step-title" id="poynting-step-title">タイトル</h3>
+          </div>
+          <p class="step-goal" id="poynting-step-goal">目標: ...</p>
+          <p class="step-narrative" id="poynting-step-narrative">...</p>
+          <div class="step-hint-box">
+            <span class="hint-icon">💡</span>
+            <span class="hint-text" id="poynting-step-action-text">...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Poynting Main Workspace -->
+      <main class="workspace">
+        <!-- Left Panel: 3D Field & 2D Slice Stage -->
+        <section class="stage-container">
+          <div class="stage-header">
+            <div class="stage-title">
+              <span class="dot live-dot"></span>
+              <h2>電磁エネルギー流束 & ポインティング・ベクトル空間</h2>
+            </div>
+            <!-- View Mode Tabs -->
+            <div class="view-mode-tabs" role="tablist">
+              <button type="button" class="tab-view-btn active" id="poynting-tab-3d" data-view="3d">
+                <span>3D エネルギー空間</span>
+              </button>
+              <button type="button" class="tab-view-btn" id="poynting-tab-slice" data-view="slice">
+                <span>2D 中央断面 E/B</span>
+              </button>
+              <button type="button" class="tab-view-btn" id="poynting-tab-split" data-view="split">
+                <span>スプリット表示</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper view-3d" id="poynting-canvas-wrapper">
+            <!-- 3D Field Pane -->
+            <div class="canvas-pane pane-3d" id="poynting-pane-3d">
+              <div class="pane-badge pane-badge-3d">3D 透過境界ボックス (V) & Sベクトル</div>
+              <canvas id="poynting-canvas-3d"></canvas>
+              <div class="three-overlay">
+                <div class="three-controls-quick">
+                  <button type="button" class="btn btn-xs btn-ghost" id="btn-poynting-autorotate">自動回転</button>
+                  <button type="button" class="btn btn-xs btn-ghost" id="btn-poynting-reset-cam">視点リセット</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2D Slice Pane -->
+            <div class="canvas-pane pane-2d" id="poynting-pane-slice">
+              <div class="pane-badge pane-badge-2d">2D アンテナ中央断面 (赤: Eベクトル, 青: B磁場)</div>
+              <canvas id="poynting-slice-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Stage Toolbar -->
+          <div class="stage-toolbar">
+            <div class="poynting-quick-presets">
+              <span class="toolbar-label">電磁波源モデル:</span>
+              <button class="btn btn-sm btn-ghost active" id="btn-poynting-src-dipole" data-src="dipole">振動双極子（アンテナ放射）</button>
+              <button class="btn btn-sm btn-ghost" id="btn-poynting-src-wire" data-src="wire">直流電線（ジュール熱吸収）</button>
+              <button class="btn btn-sm btn-ghost" id="btn-poynting-src-plane" data-src="planeWave">平面進行波</button>
+            </div>
+            <div class="stage-toggles">
+              <button type="button" class="btn btn-sm btn-outline" id="btn-poynting-play-pause">⏸ 一時停止</button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-poynting-reset">↺ リセット</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Panel: Graphs, Challenges & Controls -->
+        <aside class="sidebar">
+          <!-- Real-time Energy Ledger Graph Card -->
+          <div class="card poynting-graph-card">
+            <div class="card-header">
+              <h3>リアルタイム収支家計簿グラフ</h3>
+              <span class="card-tag">エネルギー保存則</span>
+            </div>
+            <div class="graph-wrapper">
+              <canvas id="poynting-graph-canvas"></canvas>
+            </div>
+            <div class="graph-legend">
+              <span class="legend-item"><span class="legend-color" style="background:#38bdf8;"></span>残量 $W(t)$</span>
+              <span class="legend-item"><span class="legend-color" style="background:#f97316;"></span>流出累積 $\int \Phi_S dt$</span>
+              <span class="legend-item"><span class="legend-color" style="background:#f8fafc; border:1px dashed #fff;"></span>総収支合計</span>
+            </div>
+          </div>
+
+          <!-- Poynting Challenges Card -->
+          <div class="card challenges-card" id="poynting-challenges-card">
+            <div class="card-header">
+              <h3>📝 ポインティング収支クイズ</h3>
+              <span class="card-tag">直感と計算</span>
+            </div>
+            <div class="challenge-tab-row">
+              <div class="challenge-tab-group" role="tablist">
+                <button type="button" class="btn-challenge-tab btn-poynting-challenge-tab active" data-id="poynting-ch-1">課題1</button>
+                <button type="button" class="btn-challenge-tab btn-poynting-challenge-tab" data-id="poynting-ch-2">課題2</button>
+                <button type="button" class="btn-challenge-tab btn-poynting-challenge-tab" data-id="poynting-ch-3">課題3</button>
+                <button type="button" class="btn-challenge-tab btn-poynting-challenge-tab" data-id="poynting-ch-4">課題4</button>
+              </div>
+              <button type="button" class="btn btn-xs btn-outline" id="btn-poynting-random-challenge">🎲 ランダム</button>
+            </div>
+            <div class="challenge-body">
+              <div class="challenge-meta">
+                <span class="challenge-diff-badge" id="poynting-challenge-diff">入門</span>
+                <span class="challenge-title-text" id="poynting-challenge-title">課題 1</span>
+              </div>
+              <div class="challenge-desc" id="poynting-challenge-desc"></div>
+
+              <!-- Answer Form -->
+              <form class="challenge-form" onsubmit="return false;">
+                <div id="poynting-challenge-answer-container"></div>
+                <div class="challenge-actions">
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-poynting-submit-answer">判定する</button>
+                  <button type="button" class="btn btn-sm btn-ghost" id="btn-poynting-sync-stage">🔬 シミュレーターに反映</button>
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-poynting-toggle-solution">📖 手計算解説</button>
+                </div>
+              </form>
+
+              <div id="poynting-challenge-feedback" class="challenge-feedback hidden"></div>
+
+              <!-- Solution Steps Drawer -->
+              <div id="poynting-solution-drawer" class="solution-drawer hidden">
+                <div class="solution-header">
+                  <h4>📐 ステップ別解説</h4>
+                </div>
+                <div id="poynting-solution-steps-list" class="solution-steps-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Poynting Parameters Card -->
+          <div class="card controls-card">
+            <div class="card-header">
+              <h3>電磁場パラメーター & 境界ボックス</h3>
+            </div>
+
+            <!-- Live HUD Grid -->
+            <div class="poynting-hud-grid">
+              <div class="poynting-hud-card primary">
+                <span class="poynting-hud-title">箱内の蓄積エネルギー $W(t)$</span>
+                <span class="poynting-hud-num" id="poynting-val-w">0.000 J</span>
+              </div>
+              <div class="poynting-hud-card">
+                <span class="poynting-hud-title">時間変化率 $dW/dt$</span>
+                <span class="poynting-hud-num" id="poynting-val-dw">0.000 W</span>
+              </div>
+              <div class="poynting-hud-card">
+                <span class="poynting-hud-title">境界面流出束 $\oint S \cdot dA$</span>
+                <span class="poynting-hud-num" id="poynting-val-flux">0.000 W</span>
+              </div>
+              <div class="poynting-hud-card">
+                <span class="poynting-hud-title">ジュール熱損失 $\int j \cdot E$</span>
+                <span class="poynting-hud-num" id="poynting-val-joule">0.000 W</span>
+              </div>
+            </div>
+
+            <!-- Bounding Box Slider -->
+            <div class="charge-control-group">
+              <div class="charge-title-row">
+                <span>直方体領域 $V$ の一辺の長さ</span>
+                <div class="charge-val-display" id="poynting-box-size-val">4.4 m</div>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="poynting-box-size-slider" min="1.0" max="3.5" step="0.1" value="2.2" class="range-slider" />
+              </div>
+            </div>
+
+            <!-- Frequency Slider -->
+            <div class="charge-control-group">
+              <div class="charge-title-row">
+                <span>振動周波数 $f$ ($\omega = 2\pi f$)</span>
+                <div class="charge-val-display" id="poynting-freq-val">0.60 Hz</div>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="poynting-freq-slider" min="0.2" max="1.5" step="0.05" value="0.60" class="range-slider" />
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div><!-- End #poynting-mode-view -->
+
+    <!-- ========================================================
+         Mystery Mode: The Mystery of the Missing 80 Joules
+         ======================================================== -->
+    <div id="mystery-mode-view" class="mode-view hidden" data-mode-view="mystery">
+      <!-- Mystery Top Control Bar -->
+      <div class="mystery-top-bar">
+        <div class="mystery-title-badge">
+          <span class="mystery-icon">🕵️</span>
+          <div>
+            <h2 class="mystery-heading">密室から消えた 80 ジュールの謎</h2>
+            <p class="mystery-sub">先端物理研究所・第3隔離実験室（体積 $V$）のエネルギー消失事件</p>
+          </div>
+        </div>
+
+        <div class="mystery-math-pill">
+          <span class="pill-label">立証すべき法則:</span>
+          <div id="mystery-top-formula"></div>
+        </div>
+
+        <!-- Investigation Tools -->
+        <div class="mystery-tools-group">
+          <span class="tools-label">捜査ツール:</span>
+          <button type="button" class="btn btn-xs btn-ghost btn-mystery-tool active" data-tool="inspect">
+            👆 通常調査
+          </button>
+          <button type="button" class="btn btn-xs btn-ghost btn-mystery-tool" data-tool="thermal">
+            🔥 熱探知カメラ (床/ジュール熱)
+          </button>
+          <button type="button" class="btn btn-xs btn-ghost btn-mystery-tool" data-tool="loupe">
+            🔍 精密虫眼鏡 (壁/光束検知)
+          </button>
+          <button type="button" class="btn btn-xs btn-outline" id="btn-mystery-reset">
+            ↺ 捜査リセット
+          </button>
+        </div>
+      </div>
+
+      <!-- Mystery Main Workspace -->
+      <main class="workspace mystery-workspace">
+        <!-- Left: 3D Crime Scene Stage -->
+        <section class="stage-container mystery-stage-container">
+          <div class="stage-header">
+            <div class="stage-title">
+              <span class="dot live-dot" style="background:#ef4444;"></span>
+              <h2>現場検証: 第3隔離実験室（閉領域 $V$）</h2>
+            </div>
+            <div class="view-mode-tabs">
+              <button type="button" class="tab-view-btn active" id="btn-cam-all">全体俯瞰</button>
+              <button type="button" class="tab-view-btn" id="btn-cam-heater">床ヒーター注視</button>
+              <button type="button" class="tab-view-btn" id="btn-cam-window">石英窓注視</button>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper view-3d" id="mystery-stage-3d">
+            <canvas id="mystery-canvas-3d"></canvas>
+            <div id="mystery-toast" class="mystery-toast hidden"></div>
+            <div class="mystery-stage-hints">
+              <span>💡 現場のオブジェクト（床や窓）をクリックしてエネルギーの痕跡を採取してください。</span>
+            </div>
+          </div>
+
+          <!-- Bottom: Novel Dialogue Window -->
+          <div class="mystery-dialogue-box" id="mystery-dialogue-box">
+            <div class="dialogue-avatar" id="mystery-dialogue-avatar">🕵️</div>
+            <div class="dialogue-content">
+              <div class="dialogue-speaker-row">
+                <span class="dialogue-speaker" id="mystery-dialogue-speaker">探偵（あなた）</span>
+                <span class="dialogue-progress" id="mystery-dialogue-progress">1 / 5</span>
+              </div>
+              <p class="dialogue-text" id="mystery-dialogue-text">...</p>
+              <div class="dialogue-prompt" id="mystery-dialogue-prompt" style="display:none;"></div>
+            </div>
+            <div class="dialogue-nav">
+              <button type="button" class="btn btn-xs btn-ghost" id="btn-mystery-prev-dialogue" disabled>◀ 前へ</button>
+              <button type="button" class="btn btn-xs btn-primary" id="btn-mystery-next-dialogue">次へ ▶</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right: Investigation Notebook & Accusation Panel -->
+        <aside class="sidebar mystery-sidebar" id="mystery-notebook-panel">
+          <!-- Incident Energy Balance Status -->
+          <div class="card mystery-ledger-card">
+            <div class="card-header">
+              <h3>📋 捜査手帳: エネルギー収支帳</h3>
+              <span class="card-tag alert">密室事件</span>
+            </div>
+            <div class="ledger-stat-grid">
+              <div class="ledger-stat-item">
+                <span class="stat-label">初期エネルギー $W(0)$</span>
+                <span class="stat-val" style="color:#38bdf8;">100 J</span>
+              </div>
+              <div class="ledger-stat-item">
+                <span class="stat-label">現在残量 $W(5)$</span>
+                <span class="stat-val" id="notebook-remain-val" style="color:#a855f7;">20 J</span>
+              </div>
+              <div class="ledger-stat-item highlight">
+                <span class="stat-label">消失エネルギー $\Delta W$</span>
+                <span class="stat-val danger" id="notebook-missing-val">-80 J</span>
+              </div>
+              <div class="ledger-stat-item">
+                <span class="stat-label">未解明の差分</span>
+                <span class="stat-val alert" id="notebook-discrepancy-val">80 J</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Discovered Evidences Card -->
+          <div class="card mystery-evidence-card">
+            <div class="card-header">
+              <h3>🔎 現場から採取した証拠品</h3>
+            </div>
+            <div class="evidence-list" id="notebook-evidence-list">
+              <!-- Rendered by InvestigationNotebookView -->
+            </div>
+          </div>
+
+          <!-- Accusation & Proof Equation Card -->
+          <div class="card mystery-equation-card">
+            <div class="card-header">
+              <h3>⚖️ 帳尻合わせ方程式（立証スロット）</h3>
+            </div>
+            <p class="equation-instruction">採取した証拠品を配置して、消失した 80 J の行方を完全に立証してください。</p>
+
+            <div class="equation-board">
+              <div class="eq-side left">
+                <span class="eq-symbol">[室内減少]</span>
+                <strong class="eq-val">-80 J</strong>
+              </div>
+              <span class="eq-operator">=</span>
+              <div class="eq-side right">
+                <span class="eq-operator">-</span>
+                <div class="equation-slot" id="slot-joule-heat" title="床のジュール熱">
+                  <span class="slot-placeholder">未配置 (ジュール熱)</span>
+                </div>
+                <span class="eq-operator">-</span>
+                <div class="equation-slot" id="slot-poynting-flux" title="窓の光束流出">
+                  <span class="slot-placeholder">未配置 (ポインティング流束)</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block btn-solve-case" id="btn-mystery-solve" disabled>
+              ✨ 真相を立証する（事件解決）
+            </button>
+          </div>
+        </aside>
+      </main>
+
+      <!-- Solved Modal -->
+      <div id="mystery-solved-modal" class="mystery-modal hidden">
+        <div class="mystery-modal-backdrop"></div>
+        <div class="mystery-modal-content">
+          <div class="modal-badge">🏆 CASE RESOLVED</div>
+          <h2>事件解決！密室から消えた 80 ジュールの真相</h2>
+          <div class="modal-math-hero" id="mystery-modal-math"></div>
+          <div class="modal-explanation">
+            <h4>【探偵の立証まとめ】</h4>
+            <p>
+              完全密閉と思われた実験室から消えた <strong>80 J</strong> は、物理法則の破綻ではなく、完璧に帳尻が合っていました。
+            </p>
+            <ul>
+              <li><strong>床のヒーター（30 J）:</strong> 電場が導線内の荷電粒子を加速し、ジュール熱（$\int \boldsymbol{j}\cdot\boldsymbol{E} \, dV$）として物質に仕事をしていた！</li>
+              <li><strong>南壁の石英窓（50 J）:</strong> 光（電磁波）が境界壁を貫通し、ポインティング流束（$\oint \boldsymbol{S}\cdot d\boldsymbol{A}$）として宇宙空間へ逃げ出していた！</li>
+            </ul>
+            <div class="history-note">
+              <strong>📖 歴史的動機（なぜポインティングはこの定理を作ったのか）:</strong><br>
+              かつて物理学者たちは「電磁場が物質に熱を与えるとき、空間の電磁場エネルギーがどう減り、境界からどう逃げていくのか」という<strong>エネルギー保存則の帳尻</strong>を数学的に説明できませんでした。1884年、ジョン・ヘンリー・ポインティングがこの関係を厳密に定式化したことで、電磁場そのものが実体としてエネルギーを運び、光がエネルギーの流れであることが証明されたのです。
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-primary" id="btn-mystery-modal-close">捜査を完了する</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- End #mystery-mode-view -->
   </div>
   <script type="module" src="/src/main.ts"></script>
+
 </body>
 </html>

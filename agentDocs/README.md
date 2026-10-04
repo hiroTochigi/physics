@@ -7,7 +7,8 @@ This directory contains architecture designs, feature implementation plans, E2E 
 ## Document Index
 
 | Document | Type | Description |
-| :--- | :--- | :--- |
+| [**`multi_mode_architecture_plan.md`**](file:///C:/Users/drago/projects/physics/agentDocs/multi_mode_architecture_plan.md) | Platform Architecture | Unified multi-mode physics platform design, router & lifecycle management, WebGL disposal, and zero-regression migration roadmap. |
+| [**`poynting_simulator_plan.md`**](file:///C:/Users/drago/projects/physics/agentDocs/poynting_simulator_plan.md) | Master Plan | Poynting's Theorem & EM Energy Simulator roadmap, Hertzian dipole & wire physics engines, 3D boundary flux renderers, and inquiry learning. |
 | [**`coulomb_simulator_plan.md`**](file:///C:/Users/drago/projects/physics/agentDocs/coulomb_simulator_plan.md) | Master Plan | Overall project roadmap covering Phase 1 (MVP) through Phase 4 (Learning Mode), core physics equations, and architecture diagrams. |
 | [**`learning_mode_and_challenges_plan.md`**](file:///C:/Users/drago/projects/physics/agentDocs/learning_mode_and_challenges_plan.md) | Feature Plan | Phase 4 interactive inquiry tutorial (Steps 1–4), preset exercise challenges, random problem generator, and step-by-step KaTeX solutions. |
 | [**`step3_split_view_improvement_plan.md`**](file:///C:/Users/drago/projects/physics/agentDocs/step3_split_view_improvement_plan.md) | UI/UX & Feature Plan | Step 3 dual-screen split view (2D + 3D) optimization, viewport auto-framing, and 3D test particle rolling physics simulation. |
