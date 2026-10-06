@@ -52,6 +52,7 @@ export class ThreeFieldView {
   };
 
   private animationFrameId: number | null = null;
+  private isDisposed: boolean = false;
 
   constructor(container: HTMLElement, canvas: HTMLCanvasElement, engine: PoyntingEngine) {
     this.container = container;
@@ -380,11 +381,13 @@ export class ThreeFieldView {
       this.updateCameraPosition();
     }
 
+    if (this.isDisposed) return;
     this.renderer.render(this.scene, this.camera);
   }
 
   public startAnimationLoop(): void {
     const loop = () => {
+      if (this.isDisposed) return;
       this.engine.step(1 / 60);
       this.render();
       this.animationFrameId = requestAnimationFrame(loop);
@@ -401,6 +404,7 @@ export class ThreeFieldView {
   }
 
   public handleResize(): void {
+    if (this.isDisposed) return;
     const width = this.container.clientWidth || 600;
     const height = this.container.clientHeight || 450;
     this.camera.aspect = width / height;
@@ -473,6 +477,7 @@ export class ThreeFieldView {
   }
 
   public dispose(): void {
+    this.isDisposed = true;
     this.stopAnimationLoop();
     disposeThreeScene(this.renderer, this.scene);
   }

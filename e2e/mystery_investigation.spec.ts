@@ -153,4 +153,56 @@ test.describe('Mystery Investigation Mode E2E Tests', () => {
     await expect(page.locator('#mystery-mode-view')).toBeVisible();
     await expect(page.locator('#tab-mode-mystery')).toHaveClass(/active/);
   });
+
+  test('TC-MYSTERY-06: 証拠発見の順不同・非線形探索（石英窓先行 → 床ヒーター）でも論理破綻なく進行すること', async ({ page }) => {
+    await page.goto('/?mode=mystery');
+    await page.waitForTimeout(300);
+
+    // 1. 石英窓（ポインティング光束 50J）を先に発見
+    await page.evaluate(() => {
+      const mode = (window as any)._activeMysteryMode;
+      if (mode) mode.handleObjectClick('quartz_window');
+    });
+    await page.waitForTimeout(200);
+
+    // 対話テキストの整合性を確認（50J発見、残り30J熱源を探せ、と案内されること）
+    const dialogueText = page.locator('#mystery-dialogue-text');
+    // ダイアログを「次へ」進めて探偵の最後のセリフを確認
+    const btnNext = page.locator('#btn-mystery-next-dialogue');
+    for (let i = 0; i < 4; i++) {
+      if (await btnNext.isVisible()) {
+        await btnNext.click();
+        await page.waitForTimeout(100);
+      }
+    }
+    await expect(dialogueText).toContainText('まだ「30 J」の行方が合わない');
+
+    // 2. 次に床ヒーター（ジュール熱 30J）を発見
+    await page.evaluate(() => {
+      const mode = (window as any)._activeMysteryMode;
+      if (mode) mode.handleObjectClick('floor_heater');
+    });
+    await page.waitForTimeout(200);
+
+    // 対話を進めて全80J揃ったことを確認
+    for (let i = 0; i < 2; i++) {
+      if (await btnNext.isVisible()) {
+        await btnNext.click();
+        await page.waitForTimeout(100);
+      }
+    }
+    await expect(dialogueText).toContainText('これで消えた 80 J の帳尻がすべて揃った');
+
+    // 3. 両方の証拠をスロットに配置して立証可能になること
+    const slotBtns = page.locator('.btn-slot-evidence');
+    const slotCount = await slotBtns.count();
+    for (let i = 0; i < slotCount; i++) {
+      await slotBtns.nth(i).click();
+    }
+
+    const discrepancyVal = page.locator('#notebook-discrepancy-val');
+    await expect(discrepancyVal).toHaveText('0 J');
+    const solveBtn = page.locator('#btn-mystery-solve');
+    await expect(solveBtn).toBeEnabled();
+  });
 });

@@ -29,6 +29,7 @@ export class MysteryScene3D {
   // Animation
   private clock = new THREE.Clock();
   private animationFrameId: number | null = null;
+  private isDisposed: boolean = false;
 
   constructor(container: HTMLElement, canvas: HTMLCanvasElement) {
     this.container = container;
@@ -321,6 +322,7 @@ export class MysteryScene3D {
 
   private startLoop(): void {
     const animate = () => {
+      if (this.isDisposed) return;
       this.animationFrameId = requestAnimationFrame(animate);
 
       const elapsedTime = this.clock.getElapsedTime();
@@ -338,12 +340,15 @@ export class MysteryScene3D {
       }
 
       this.controls.update();
-      this.renderer.render(this.scene, this.camera);
+      if (!this.isDisposed) {
+        this.renderer.render(this.scene, this.camera);
+      }
     };
     animate();
   }
 
   public handleResize(): void {
+    if (this.isDisposed) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
     if (width === 0 || height === 0) return;
@@ -354,6 +359,7 @@ export class MysteryScene3D {
   }
 
   public dispose(): void {
+    this.isDisposed = true;
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;

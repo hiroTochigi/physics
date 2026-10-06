@@ -32,7 +32,6 @@ export function disposeThreeScene(
   });
 
   renderer.dispose();
-  renderer.forceContextLoss();
 }
 
 function disposeMaterial(mat: THREE.Material): void {

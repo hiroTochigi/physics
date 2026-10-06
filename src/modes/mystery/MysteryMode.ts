@@ -87,6 +87,8 @@ export class MysteryMode implements SimulatorMode {
 
   public unmount(): void {
     this.pause();
+    const modal = document.getElementById('mystery-solved-modal');
+    if (modal) modal.classList.add('hidden');
     if (this.scene3D) {
       this.scene3D.dispose();
       this.scene3D = null;
@@ -163,17 +165,28 @@ export class MysteryMode implements SimulatorMode {
   }
 
   public handleObjectClick(objectId: string): void {
+    const heaterDiscovered = this.state.evidences.floor_heater.discovered;
+    const windowDiscovered = this.state.evidences.quartz_window.discovered;
+
     if (objectId === 'floor_heater') {
-      if (!this.state.evidences.floor_heater.discovered) {
+      if (!heaterDiscovered) {
         this.discoverEvidence('floor_heater');
-        this.setPhase('investigate_1');
+        if (!windowDiscovered) {
+          this.setPhase('investigate_1');
+        } else {
+          this.setPhase('investigate_heater_second');
+        }
       } else {
         this.showToast('🔍 床のヒーター：電流と電場の積により 30 J のジュール熱が消費された痕跡です。');
       }
     } else if (objectId === 'quartz_window') {
-      if (!this.state.evidences.quartz_window.discovered) {
+      if (!windowDiscovered) {
         this.discoverEvidence('quartz_window');
-        this.setPhase('investigate_2');
+        if (!heaterDiscovered) {
+          this.setPhase('investigate_window_first');
+        } else {
+          this.setPhase('investigate_2');
+        }
       } else {
         this.showToast('🔍 南壁の石英窓：電磁波のポインティング・ベクトル束（50 J）が外へ飛び去った痕跡です。');
       }
@@ -230,7 +243,10 @@ export class MysteryMode implements SimulatorMode {
       } else if (this.state.currentPhase === 'investigate_1') {
         this.setTool('loupe');
         this.scene3D?.focusCamera('window');
-      } else if (this.state.currentPhase === 'investigate_2') {
+      } else if (this.state.currentPhase === 'investigate_window_first') {
+        this.setTool('thermal');
+        this.scene3D?.focusCamera('heater');
+      } else if (this.state.currentPhase === 'investigate_2' || this.state.currentPhase === 'investigate_heater_second') {
         this.setPhase('accusation');
       }
     }
@@ -344,6 +360,9 @@ export class MysteryMode implements SimulatorMode {
     toolBtns.forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.tool === 'inspect');
     });
+
+    const modal = document.getElementById('mystery-solved-modal');
+    if (modal) modal.classList.add('hidden');
 
     this.updateCurrentDialogue();
     this.showToast('↺ 捜査状況を初期状態にリセットしました。');

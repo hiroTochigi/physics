@@ -62,7 +62,7 @@ export const PHASE_DIALOGUES: Record<MysteryPhase, DialogueMessage[]> = {
       speakerName: '探偵（あなた）',
       avatar: '🕵️',
       text: '慌てるな、アオイ。エネルギーは勝手に消滅したりしない。必ず現場に何らかの「帳尻を合わせる抜け穴」があるはずだ。現場を検証するぞ！',
-      actionPrompt: '💡 ツールを「熱探知カメラ」に切り替えて、実験室の床をクリック・調査してみよう！',
+      actionPrompt: '💡 ツールを「熱探知カメラ」や「虫眼鏡」に切り替えて、床の熱源や壁面の境界を調査してみよう！',
       suggestedTool: 'thermal',
       focusTarget: 'heater'
     }
@@ -89,6 +89,42 @@ export const PHASE_DIALOGUES: Record<MysteryPhase, DialogueMessage[]> = {
       actionPrompt: '💡 ツールを「精密虫眼鏡（UV）」に切り替えて、壁面の怪しい場所（窓など）をスキャンしてみよう！',
       suggestedTool: 'loupe',
       focusTarget: 'window'
+    }
+  ],
+  investigate_window_first: [
+    {
+      speaker: 'detective',
+      speakerName: '探偵（あなた）',
+      avatar: '🕵️',
+      text: '南側の壁面……ここだけ金属シールドではなく「透明な石英ガラス窓」になっているな。虫眼鏡で表面の電磁場痕跡をスキャンしてみよう。'
+    },
+    {
+      speaker: 'assistant',
+      speakerName: '助手のアオイ',
+      avatar: '👩‍🔬',
+      text: 'あっ！ ガラス窓の表面から、ものすごい勢いで外向きに飛び出していくベクトル束（S = E × B / μ₀）が感知されました！'
+    },
+    {
+      speaker: 'detective',
+      speakerName: '探偵（あなた）',
+      avatar: '🕵️',
+      text: '電磁波が光となって窓を突き抜け、宇宙空間へと飛び去っていたのか！ 窓の表面全体で流出束を積分してみろ！'
+    },
+    {
+      speaker: 'assistant',
+      speakerName: '助手のアオイ',
+      avatar: '👩‍🔬',
+      text: '計算完了しました！ 5秒間で窓から逃げ去った電磁波エネルギー流束は……ピッタリ「50 J」です！',
+      focusTarget: 'window'
+    },
+    {
+      speaker: 'detective',
+      speakerName: '探偵（あなた）',
+      avatar: '🕵️',
+      text: '境界を抜けるポインティング流束として 50 J が外へ逃げていたわけか。だが……消えた 80 J のうち、まだ「30 J」の行方が合わない！ 部屋の内部で熱として消費されていないか？',
+      actionPrompt: '💡 ツールを「熱探知カメラ」に切り替えて、実験室の床（配線ヒーター）を調査してみよう！',
+      suggestedTool: 'thermal',
+      focusTarget: 'heater'
     }
   ],
   investigate_2: [
@@ -121,7 +157,29 @@ export const PHASE_DIALOGUES: Record<MysteryPhase, DialogueMessage[]> = {
       speaker: 'detective',
       speakerName: '探偵（あなた）',
       avatar: '🕵️',
-      text: '30 J のジュール熱と、50 J の窓からの光束……これで消えた 80 J の帳尻がすべて揃った！ 捜査手帳で立証を完了させよう！',
+      text: '先に特定した 30 J のジュール熱と、この窓からの 50 J の光束……これで消えた 80 J の帳尻がすべて揃った！ 捜査手帳で立証を完了させよう！',
+      actionPrompt: '💡 右側の捜査手帳パネルで、集めた証拠をスロットに配置して「真相を立証する」ボタンを押そう！'
+    }
+  ],
+  investigate_heater_second: [
+    {
+      speaker: 'detective',
+      speakerName: '探偵（あなた）',
+      avatar: '🕵️',
+      text: '見ろ、床下に埋め込まれた導線ヒーターに電流が流れ、ジュール熱（∫ j・E dV）が発生していたぞ！'
+    },
+    {
+      speaker: 'assistant',
+      speakerName: '助手のアオイ',
+      avatar: '👩‍🔬',
+      text: '熱探知カメラの積算計が反応しています！ 物質に変換されたジュール熱として「30 J」を特定しました！',
+      focusTarget: 'heater'
+    },
+    {
+      speaker: 'detective',
+      speakerName: '探偵（あなた）',
+      avatar: '🕵️',
+      text: '窓から逃げた 50 J の光束と、床で消費された 30 J のジュール熱……これで消えた 80 J の帳尻がすべて揃った！ 捜査手帳で立証を完了させよう！',
       actionPrompt: '💡 右側の捜査手帳パネルで、集めた証拠をスロットに配置して「真相を立証する」ボタンを押そう！'
     }
   ],

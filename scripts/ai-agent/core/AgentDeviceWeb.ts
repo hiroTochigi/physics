@@ -187,32 +187,36 @@ export class AgentDeviceWeb {
     return refOrSelector;
   }
 
-  public async tap(refOrSelector: string): Promise<void> {
+  public async tap(refOrSelector: string, timeoutMs: number = 6000): Promise<void> {
     if (!this.page) throw new Error('Page not initialized');
     const selector = this.resolveSelector(refOrSelector);
 
     // Try finding if the element is an input inside a label (like custom toggle switches)
     const isCustomToggle = await this.page.evaluate((sel) => {
-      const el = document.querySelector(sel);
-      if (!el) return false;
-      return el.tagName.toLowerCase() === 'input' && !!el.closest('label');
+      try {
+        const el = document.querySelector(sel);
+        if (!el) return false;
+        return el.tagName.toLowerCase() === 'input' && !!el.closest('label');
+      } catch {
+        return false;
+      }
     }, selector);
 
     if (isCustomToggle) {
       // Click the wrapping label or force click
       try {
-        await this.page.locator(`label:has(${selector})`).click({ timeout: 2000 });
+        await this.page.locator(`label:has(${selector})`).first().click({ timeout: timeoutMs, noWaitAfter: true });
       } catch {
-        await this.page.click(selector, { force: true });
+        await this.page.locator(selector).first().click({ force: true, timeout: timeoutMs, noWaitAfter: true });
       }
     } else {
       try {
-        await this.page.click(selector, { timeout: 3000 });
+        await this.page.locator(selector).first().click({ timeout: timeoutMs, noWaitAfter: true });
       } catch {
-        await this.page.click(selector, { force: true });
+        await this.page.locator(selector).first().click({ force: true, timeout: timeoutMs, noWaitAfter: true });
       }
     }
-    await this.page.waitForTimeout(100);
+    await this.page.waitForTimeout(50);
   }
 
   public async fill(refOrSelector: string, text: string): Promise<void> {

@@ -1,9 +1,11 @@
 export type MysteryPhase =
-  | 'intro'           // 事件発生・初期状況確認
-  | 'investigate_1'   // 現場検証1：床のヒーター調査
-  | 'investigate_2'   // 現場検証2：石英窓・光の抜け穴調査
-  | 'accusation'      // 捜査会議：証拠照合・帳尻合わせ
-  | 'solved';         // 事件解決・ポインティングの定理の公式化
+  | 'intro' // 事件発生・初期状況確認
+  | 'investigate_1' // 現場検証：床ヒーター先行発見（残り50J）
+  | 'investigate_2' // 現場検証：石英窓で2件目発見（全80J解明）
+  | 'investigate_window_first' // 現場検証：石英窓先行発見（残り30J）
+  | 'investigate_heater_second' // 現場検証：床ヒーターで2件目発見（全80J解明）
+  | 'accusation' // 捜査会議：証拠照合・帳尻合わせ
+  | 'solved'; // 事件解決・ポインティングの定理の公式化
 
 export type ToolType = 'inspect' | 'loupe' | 'thermal';
 
