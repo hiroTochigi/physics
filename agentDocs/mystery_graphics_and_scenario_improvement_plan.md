@@ -150,7 +150,9 @@ flowchart TD
 
 | ファイルパス | 主な改修内容 |
 | :--- | :--- |
-| `src/modes/mystery/render/MysteryScene3D.ts` | 実験室メッシュのSF化、マテリアル刷新（フレネル・サーマル）、動的パーティクルストリーム（ポインティング光束・熱気）、ツール別HUDエフェクトの描画 |
+| `src/modes/mystery/render/MysteryScene3D.ts` | 3Dメインコントローラー（カメラ、OrbitControls、Raycaster、描画ループ、各サブモジュールのオーケストレーション） |
+| `src/modes/mystery/render/MysteryLabBuilder.ts` | 実験室メッシュのSF化、プロシージャル床テクスチャ、トラスフレーム、床ヒーター・石英窓・中央アンテナのモデリングとマテリアル管理 |
+| `src/modes/mystery/render/MysteryParticleSystem.ts` | 動的物理エフェクト（ポインティング光粒子ストリーム、ジュール熱対流粒子、同心電磁波パルス）の生成・更新・破棄 |
 | `src/modes/mystery/MysteryScenarioData.ts` | ダミー調査ポイント（シールド壁 0J、蓄電コア 20J）の証拠データ追加、クリック時リアクション台詞の拡張 |
 | `src/modes/mystery/MysteryMode.ts` | ダミー調査ポイントのクリックイベント処理、証拠発見時の対話ウィンドウ連携の強化、立証演出シーケンス制御 |
 | `src/modes/mystery/ui/InvestigationNotebookView.ts` | 捜査手帳のカード視覚デザイン洗練、数式カラーコーディング（赤・橙・青）、スクロール最適化 |
@@ -175,6 +177,14 @@ flowchart TD
   - **ジュール熱放熱・ゆらめきパーティクル (`thermalPoints`: `THREE.Points`)**: 床ヒーターの表面から上空へゆっくりと対流・上昇する130個の熱気泡・赤外線パーティクルを実装。熱探知カメラ時および証拠獲得時に鮮やかに明滅。
   - **中央アンテナ同心球状電磁波パルス (`emPulseWaves`)**: アンテナコアから放射状に拡がる3重の球面波パルスリングが、閉領域 $V$ の壁面へと向かって同心円状に連続伝播する波動アニメーションを実装。
   - **動作検証**: E2Eテスト全6件 PASS、AIエージェント自律捜査およびスクリーンショットの再生成・正常動作を確認。
+
+* ✅ **アーキテクチャ刷新: 3Dレンダラーモジュール分割リファクタリング（完了）**
+  - **背景**: `MysteryScene3D.ts` が 1,050 行を超え、Three.js 基盤、Canvas プロシージャル描画、空間モデリング、3 つの動的パーティクル系が集中していたため、Phase C / Phase D 実装に向けた保守性向上のため分割を実施。
+  - **構造分割**:
+    1. [`MysteryScene3D.ts`](file:///C:/Users/drago/projects/physics/src/modes/mystery/render/MysteryScene3D.ts)（約210行）: Three.js 基盤、描画ループ、カメラ制御、ユーザー操作のオーケストレーションに特化。
+    2. [`MysteryLabBuilder.ts`](file:///C:/Users/drago/projects/physics/src/modes/mystery/render/MysteryLabBuilder.ts)（約380行）: 実験室構造、プロシージャル床テクスチャ、備品（ヒーター・窓・アンテナ）のジオメトリとマテリアルをカプセル化。
+    3. [`MysteryParticleSystem.ts`](file:///C:/Users/drago/projects/physics/src/modes/mystery/render/MysteryParticleSystem.ts)（約280行）: ポインティング光子流、ジュール熱気泡、電磁波パルスのバッファ更新・アニメーション・ライフサイクルをカプセル化。
+  - **動作検証**: TypeScript ビルドおよび Playwright E2E テスト全 6 件 PASS（外部公開 API の互換性と全動作を完全維持）。
 
 ---
 
