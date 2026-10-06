@@ -525,6 +525,7 @@ body {
   font-size: 0.78rem;
   color: #e2e8f0;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Sidebar (Right) */
@@ -1405,6 +1406,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .mode-tab:hover {

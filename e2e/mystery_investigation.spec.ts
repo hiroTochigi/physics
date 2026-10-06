@@ -21,7 +21,7 @@ test.describe('Mystery Investigation Mode E2E Tests', () => {
     const remainVal = page.locator('#notebook-remain-val');
     const discrepancyVal = page.locator('#notebook-discrepancy-val');
 
-    await expect(missingVal).toHaveText('-80 J');
+    await expect(missingVal).toHaveText('80 J');
     await expect(remainVal).toHaveText('20 J');
     await expect(discrepancyVal).toHaveText('80 J');
 

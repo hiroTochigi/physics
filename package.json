@@ -12,7 +12,12 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "agent:all": "npx tsx scripts/ai-agent/runAll.ts",
+    "agent:coulomb": "npx tsx scripts/ai-agent/tests/coulomb/coulombAgent.test.ts",
+    "agent:poynting": "npx tsx scripts/ai-agent/tests/poynting/poyntingAgent.test.ts",
+    "agent:mystery": "npx tsx scripts/ai-agent/tests/mystery/mysteryAgent.test.ts",
+    "agent:explore": "npx tsx scripts/ai-agent/runAll.ts"
   },
   "dependencies": {
     "@types/katex": "^0.16.8",

@@ -112,7 +112,7 @@ export class GraphView {
       ctx.lineTo(padLeft + plotW, sy);
       ctx.stroke();
 
-      ctx.fillText(CoulombEngine.formatForce(fVal), padLeft - 6, sy + 3);
+      ctx.fillText(CoulombEngine.formatShortForce(fVal), padLeft - 6, sy + 3);
     }
 
     // 2. Axes

@@ -121,6 +121,15 @@ export class CoulombEngine {
     return `${forceN.toExponential(2)} N`;
   }
 
+  public static formatShortForce(forceN: number): string {
+    if (forceN < 1e-9) return '0 N';
+    if (forceN < 1e-6) return `${(forceN * 1e9).toFixed(1)} nN`;
+    if (forceN < 1e-3) return `${(forceN * 1e6).toFixed(1)} μN`;
+    if (forceN < 1) return `${(forceN * 1e3).toFixed(1)} mN`;
+    if (forceN < 100) return `${forceN.toFixed(2)} N`;
+    return `${forceN.toExponential(1)} N`;
+  }
+
   /**
    * Format distance value into a clean human-readable string (m, cm)
    */

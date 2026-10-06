@@ -18,6 +18,8 @@ ModeRegistry.register(mysteryMode);
 // 2. Instantiate platform router
 const router = new AppRouter();
 
+import renderMathInElement from 'katex/contrib/auto-render';
+
 // Synchronize platform header text when modes switch
 router.onModeChange((mode) => {
   const brandTitle = document.getElementById('header-title-text');
@@ -27,6 +29,17 @@ router.onModeChange((mode) => {
   }
   if (brandSubtitle) {
     brandSubtitle.innerHTML = mode.metadata.subtitle;
+    try {
+      renderMathInElement(brandSubtitle, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false
+      });
+    } catch (e) {
+      console.warn('Header math render error:', e);
+    }
   }
 });
 
