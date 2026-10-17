@@ -3,6 +3,7 @@ import { AppRouter } from './core/AppRouter.ts';
 import { CoulombMode } from './modes/coulomb/CoulombMode.ts';
 import { PoyntingMode } from './modes/poynting/PoyntingMode.ts';
 import { MysteryMode } from './modes/mystery/MysteryMode.ts';
+import { PuzzleMode } from './modes/puzzle/PuzzleMode.ts';
 
 import 'katex/dist/katex.min.css';
 
@@ -10,10 +11,12 @@ import 'katex/dist/katex.min.css';
 const coulombMode = new CoulombMode();
 const poyntingMode = new PoyntingMode();
 const mysteryMode = new MysteryMode();
+const puzzleMode = new PuzzleMode();
 
 ModeRegistry.register(coulombMode);
 ModeRegistry.register(poyntingMode);
 ModeRegistry.register(mysteryMode);
+ModeRegistry.register(puzzleMode);
 
 // 2. Instantiate platform router
 const router = new AppRouter();

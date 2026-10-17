@@ -38,6 +38,11 @@
           <span class="mode-tab-label">ミステリー捜査</span>
           <span class="mode-tab-tag">消失事件</span>
         </button>
+        <button type="button" class="mode-tab" id="tab-mode-puzzle" data-mode="puzzle" role="tab" aria-selected="false">
+          <span class="mode-tab-icon">🧩</span>
+          <span class="mode-tab-label">数式パズル</span>
+          <span class="mode-tab-tag">式のスッキリ化</span>
+        </button>
       </nav>
 
       <div class="header-badges">
@@ -748,6 +753,13 @@
         </div>
       </div>
     </div><!-- End #mystery-mode-view -->
+
+    <!-- ========================================================
+         Math Block Puzzle Mode View Container
+         ======================================================== -->
+    <div id="puzzle-mode-view" class="mode-view hidden" data-mode-view="puzzle">
+      <!-- Mounted dynamically by PuzzleHUDView -->
+    </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
 
