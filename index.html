@@ -43,6 +43,16 @@
           <span class="mode-tab-label">数式パズル</span>
           <span class="mode-tab-tag">式のスッキリ化</span>
         </button>
+        <button type="button" class="mode-tab" id="tab-mode-electron" data-mode="electron" role="tab" aria-selected="false">
+          <span class="mode-tab-icon">⚛️</span>
+          <span class="mode-tab-label">電子の古典半径</span>
+          <span class="mode-tab-tag">自己エネルギー</span>
+        </button>
+        <button type="button" class="mode-tab" id="tab-mode-faraday" data-mode="faraday" role="tab" aria-selected="false">
+          <span class="mode-tab-icon">🧲</span>
+          <span class="mode-tab-label">ファラデー幾何学</span>
+          <span class="mode-tab-tag">力線・等電位面</span>
+        </button>
       </nav>
 
       <div class="header-badges">
@@ -759,6 +769,20 @@
          ======================================================== -->
     <div id="puzzle-mode-view" class="mode-view hidden" data-mode-view="puzzle">
       <!-- Mounted dynamically by PuzzleHUDView -->
+    </div>
+
+    <!-- ========================================================
+         Classical Electron Radius & Self-Energy Mode View Container
+         ======================================================== -->
+    <div id="electron-mode-view" class="mode-view hidden" data-mode-view="electron">
+      <!-- Mounted dynamically by ElectronHUDView -->
+    </div>
+
+    <!-- ========================================================
+         Faraday Lines of Force & Equipotentials View Container
+         ======================================================== -->
+    <div id="faraday-mode-view" class="mode-view hidden" data-mode-view="faraday">
+      <!-- Mounted dynamically by FaradayHUDView -->
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>

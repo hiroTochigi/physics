@@ -4,6 +4,8 @@ import { CoulombMode } from './modes/coulomb/CoulombMode.ts';
 import { PoyntingMode } from './modes/poynting/PoyntingMode.ts';
 import { MysteryMode } from './modes/mystery/MysteryMode.ts';
 import { PuzzleMode } from './modes/puzzle/PuzzleMode.ts';
+import { ElectronMode } from './modes/electron/ElectronMode.ts';
+import { FaradayMode } from './modes/faraday/FaradayMode.ts';
 
 import 'katex/dist/katex.min.css';
 
@@ -12,11 +14,15 @@ const coulombMode = new CoulombMode();
 const poyntingMode = new PoyntingMode();
 const mysteryMode = new MysteryMode();
 const puzzleMode = new PuzzleMode();
+const electronMode = new ElectronMode();
+const faradayMode = new FaradayMode();
 
 ModeRegistry.register(coulombMode);
 ModeRegistry.register(poyntingMode);
 ModeRegistry.register(mysteryMode);
 ModeRegistry.register(puzzleMode);
+ModeRegistry.register(electronMode);
+ModeRegistry.register(faradayMode);
 
 // 2. Instantiate platform router
 const router = new AppRouter();

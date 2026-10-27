@@ -12,7 +12,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3005',
     trace: 'on',
     video: 'on',
     screenshot: 'on',
@@ -27,9 +27,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm.cmd run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: 'cmd.exe /c "npm run dev -- --port 3005"',
+    url: 'http://localhost:3005',
+    reuseExistingServer: true,
     timeout: 30 * 1000,
   },
 });
